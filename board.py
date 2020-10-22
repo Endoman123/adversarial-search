@@ -52,9 +52,8 @@ class Board():
         return "/".join(ret)
 
     # Restore state from memento
-    # Assume that the board size is the same
     def restore(self, memento):
-        board = np.array([])
+        board = []
         m_arr = memento.split("/")
 
         for row in m_arr:
@@ -65,17 +64,25 @@ class Board():
                     board_r += ["_" for _ in range(int(c))]
                 else:
                     board_r += c
+                
+            if len(board_r) != len(self):
+                raise Exception(f"Board sizes not equal! {len(board_r)} != {len(self)}")
 
+            board += [board_r] 
+        
+        self._board = np.array(board)
+
+    # Perform move
+    # This assumes that whatever move you do is a valid move
+    # Will throw an exception otherwise
     def move(self, a, b):
         p_from = self._board[a[0], a[1]]
         p_to = self._board[b[0], b[1]]
-        
-        print(p_from)
-        print(p_to)
-
+       
         if p_from != "_" and p_from != "O": # A valid piece to move
             if p_to == "_": # Empty location
                 p_to = p_from
+
             elif p_from.isupper() != p_to.isupper(): # Battle
                 c_from = p_from.lower()
                 c_to = p_to.lower()
@@ -97,8 +104,18 @@ class Board():
         self._board[a[0], a[1]] = "_"
         self._board[b[0], b[1]] = p_to
 
+    # Move generator
+    # Returns a tuple of moves based on whether you are major or minor
+    # For the sake of this, major/minor refers to the case of the piece
+    def generate_moves(self, major):
+        for i in range(len(self)):
+            pass
+
     def __repr__(self):
         return repr(self._board)
+
+    def __len__(self):
+        return len(self._board)
 
 if __name__ == "__main__":
     board = Board(3)
