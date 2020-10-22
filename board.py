@@ -66,6 +66,37 @@ class Board():
                 else:
                     board_r += c
 
+    def move(self, a, b):
+        p_from = self._board[a[0], a[1]]
+        p_to = self._board[b[0], b[1]]
+        
+        print(p_from)
+        print(p_to)
+
+        if p_from != "_" and p_from != "O": # A valid piece to move
+            if p_to == "_": # Empty location
+                p_to = p_from
+            elif p_from.isupper() != p_to.isupper(): # Battle
+                c_from = p_from.lower()
+                c_to = p_to.lower()
+
+                if (c_from == "h" and c_to == "w" or
+                    c_from == "m" and c_to == "h" or
+                    c_from == "w" and c_to == "m"): # Winning fight
+                        p_to = p_from
+
+                elif c_from == c_to: # Tie, both pieces are destroyed
+                    p_to = "_"
+
+            else: # Same pieces, invalid move
+                raise Exception("Invalid move!")
+
+        else: # Not a piece, invalid move
+            raise Exception("Invalid move!")
+
+        self._board[a[0], a[1]] = "_"
+        self._board[b[0], b[1]] = p_to
+
     def __repr__(self):
         return repr(self._board)
 
@@ -73,4 +104,9 @@ if __name__ == "__main__":
     board = Board(3)
     m = board.create_memento()
     board.restore(m)
+
+    b_from = (8, 0)
+    b_to = (7, 0)
+
+    board.move(b_from, b_to)
     print(board)
