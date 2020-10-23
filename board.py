@@ -3,8 +3,6 @@ import numpy as np
 # Board representation
 # Char board, with Originator structure
 class Board():
-    _board = np.array([])
-   
     # Initialize the board with some multiple d
     # The board will be 3dx3d large.
     def __init__(self, d):
@@ -24,8 +22,9 @@ class Board():
         # Step 3: Populate with pits
         board[range(1, size - 1), np.random.randint(size, size = size - 2)] = ["O" for _ in range(size - 2)]
 
-        # Step 4: Assign class member
+        # Step 4: Assign class members
         self._board = board
+        self._size = size
     
     # Create memento
     def create_memento(self):
@@ -105,25 +104,51 @@ class Board():
         self._board[b[0], b[1]] = p_to
 
     # Move generator
-    # Returns a tuple of moves based on whether you are major or minor
+    # Returns a dict of moves based on whether you are major or minor
     # For the sake of this, major/minor refers to the case of the piece
     def generate_moves(self, major):
-        for i in range(len(self)):
-            pass
+        moves = {} 
+        b_size = self._size
+        b = self._board
+
+        for r in range(b_size):
+            for c in range(b_size):
+                p = b[r][c]
+                is_piece = p.lower() in "whm"
+                is_side = p.isupper() == major
+
+                if is_piece and is_side:
+                    p_moves = []
+                    for i in (r - 1, r + 1):
+                        if not 0 <= i < b_size:
+                            continue
+                        for j in range(max(0, c - 1), min(b_size, c + 2)):
+                            p_to = b[i][j]
+                            if not p_to.lower() == "whm" or p.isupper() != major: # Check if move is valid
+                                p_moves += [(i, j)] 
+
+                    if p_moves:
+                        moves[f"{r} {c}"] = p_moves
+
+        return moves
 
     def __repr__(self):
         return repr(self._board)
 
     def __len__(self):
-        return len(self._board)
+        return self._size
 
 if __name__ == "__main__":
     board = Board(3)
     m = board.create_memento()
-    board.restore(m)
 
     b_from = (8, 0)
     b_to = (7, 0)
 
     board.move(b_from, b_to)
     print(board)
+
+    board.restore(m)
+    print(board)
+
+    print(board.generate_moves(False))
