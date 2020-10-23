@@ -138,17 +138,4 @@ class Board():
     def __len__(self):
         return self._size
 
-if __name__ == "__main__":
-    board = Board(3)
-    m = board.create_memento()
 
-    b_from = (8, 0)
-    b_to = (7, 0)
-
-    board.move(b_from, b_to)
-    print(board)
-
-    board.restore(m)
-    print(board)
-
-    print(board.generate_moves(False))
