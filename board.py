@@ -1,8 +1,9 @@
 import numpy as np
+from collections import abc as cabc
 
 # Board representation
 # Char board, with Originator structure
-class Board():
+class Board(cabc.Sequence):
     # Initialize the board with some multiple d
     # The board will be 3dx3d large.
     def __init__(self, d):
@@ -74,6 +75,7 @@ class Board():
     # Perform move
     # This assumes that whatever move you do is a valid move
     # Will throw an exception otherwise
+    # Returns the score of the move:
     def move(self, a, b):
         p_from = self._board[a[0], a[1]]
         p_to = self._board[b[0], b[1]]
@@ -102,7 +104,7 @@ class Board():
 
         self._board[a[0], a[1]] = "_"
         self._board[b[0], b[1]] = p_to
-
+            
     # Move generator
     # Returns a dict of moves based on whether you are major or minor
     # For the sake of this, major/minor refers to the case of the piece
@@ -132,10 +134,23 @@ class Board():
 
         return moves
 
-    def __repr__(self):
-        return repr(self._board)
+    def __getitem__(self, i):
+        return self._board[i[0]]
 
     def __len__(self):
         return self._size
 
+    def __repr__(self):
+        from os import linesep
+
+        ret = "" 
+        sep = "+" + ("---+" * (self._size))
+
+        ret += sep + linesep
+        for row in self._board:
+            ret += "| " + " | ".join(row) + " |"
+            ret += linesep
+            ret += sep + linesep 
+
+        return ret
 
