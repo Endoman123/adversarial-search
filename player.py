@@ -1,5 +1,6 @@
 import numpy as np
 from board import Board
+from minimax import *
 
 # Abstract class that defines a player
 # No idea how to do pythonic interfaces,
@@ -26,8 +27,6 @@ class CLIPlayer(Player):
         while True:
             p_tostr = input("Choose destination (as \"r c\"): ").strip()
             p_to = tuple([int(i) for i in p_tostr.split()])
-        
-            print(p_to)
 
             if any(m[1] == p_to for m in moves):
                 break
@@ -42,4 +41,6 @@ class AIPlayer(Player):
         self._depth = depth
 
     def get_move(self):
-        pass
+        ret = minimax(self._board, self._depth, self._major)
+        print(ret)
+        return ret[1] 

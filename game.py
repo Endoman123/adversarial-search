@@ -11,4 +11,7 @@ if __name__ == "__main__":
         c_move = p1.get_move()
 
         board.move(c_move[0], c_move[1])
-
+        
+        c_move = p2.get_move()
+        print(c_move)
+        board.move(c_move[0], c_move[1])
