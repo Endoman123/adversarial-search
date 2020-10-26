@@ -130,7 +130,7 @@ class Board(cabc.Sequence):
                             continue
                         for j in range(max(0, c - 1), min(b_size, c + 2)):
                             p_to = b[i][j]
-                            if not p_to.lower() == "whm" or p.isupper() != major: # Check if move is valid
+                            if not p_to.lower() in "whm" or p.isupper() != major: # Check if move is valid
                                 moves += [(c_from, (i, j))] 
 
         return moves
