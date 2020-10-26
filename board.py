@@ -84,6 +84,9 @@ class Board(cabc.Sequence):
             if p_to == "_": # Empty location
                 p_to = p_from
 
+            elif p_to == "O": # Pit
+                pass
+
             elif p_from.isupper() != p_to.isupper(): # Battle
                 c_from = p_from.lower()
                 c_to = p_to.lower()
