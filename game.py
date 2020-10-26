@@ -4,7 +4,7 @@ from board import Board
 if __name__ == "__main__":
     board = Board(3)
     p1 = CLIPlayer(board, True)
-    p2 = CLIPlayer(board, False)
+    p2 = AIPlayer(board, False, 4)
 
     while True:
         print(board) 
