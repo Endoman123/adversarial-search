@@ -109,7 +109,7 @@ class Board(cabc.Sequence):
     # Returns a dict of moves based on whether you are major or minor
     # For the sake of this, major/minor refers to the case of the piece
     def generate_moves(self, major):
-        moves = {} 
+        moves = [] 
         b_size = self._size
         b = self._board
 
@@ -120,6 +120,7 @@ class Board(cabc.Sequence):
                 is_side = p.isupper() == major
 
                 if is_piece and is_side:
+                    c_from = (r, c)
                     p_moves = []
                     for i in (r - 1, r + 1):
                         if not 0 <= i < b_size:
@@ -127,10 +128,7 @@ class Board(cabc.Sequence):
                         for j in range(max(0, c - 1), min(b_size, c + 2)):
                             p_to = b[i][j]
                             if not p_to.lower() == "whm" or p.isupper() != major: # Check if move is valid
-                                p_moves += [(i, j)] 
-
-                    if p_moves:
-                        moves[f"{r} {c}"] = p_moves
+                                moves += [(c_from, (i, j))] 
 
         return moves
 
