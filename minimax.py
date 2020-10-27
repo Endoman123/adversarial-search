@@ -78,12 +78,10 @@ def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
             if is_major:
                 a = max(a, opt_value)
                 if a >= b:
-                    print("Beta cut-off") 
                     break
             else:
                 b = min(b, opt_value)
                 if b <= a:
-                    print("Alpha cut-off") 
                     break
 
         ret = (opt_value, opt_move)
