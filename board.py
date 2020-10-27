@@ -149,10 +149,16 @@ class Board(cabc.Sequence):
         sep = "+" + ("---+" * (self._size))
 
         ret += sep + linesep
-        for row in self._board:
+        
+        for i in range(self._size):
+            row = self._board[i] 
+
             ret += "| " + " | ".join(row) + " |"
             ret += linesep
-            ret += sep + linesep 
+            ret += sep
+
+            if i < self._size - 1:
+                ret += linesep
 
         return ret
 

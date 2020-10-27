@@ -14,7 +14,7 @@ def evaluate(board):
 
     n_major = sum(map(lambda x: x in "WHM", mm_eval))
     n_minor = sum(map(lambda x: x in "whm", mm_eval))
-  
+
     # We need to cover winning states
     if n_major == 0: # Minor wins
         ret = -inf
@@ -22,8 +22,6 @@ def evaluate(board):
         ret = inf
     else: # Undecided
         ret = n_major - n_minor
-    
-    print(ret)
 
     return ret
 
@@ -37,45 +35,57 @@ def evaluate(board):
 def h_disable(**kwargs):
     return 0
 
+# Minimax with alpha-beta pruning
+# board: Board state
+# depth: Current depth to search
+# is_major: Whether the player is the major player
+# h: Heuristic function, defaults to h_disable
+# a: Alpha
+# b: Beta
+# Returns the move and value best suited to transition into the most optimal state
 def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
     b_metric = evaluate(board)
     b_moves = board.generate_moves(is_major) 
-    ret = (0, None)
+    ret = (b_metric, None)
 
     if depth == 0 or abs(b_metric) == inf:
-        ret = (b_metric, None)
-
+        pass
     else:
         moves_queue = PriorityQueue() 
         sign = 1 if is_major else -1
-        value = -inf * sign 
         mm = board.create_memento()   
-         
+        opt_value = -inf * sign
+        opt_move = ()
+
         for m in b_moves:
             moves_queue.put((sign * h(move = m), m))
             
         while not moves_queue.empty():
             item = moves_queue.get()
             move = item[1]
-            func = max if is_major else min
            
-            print(item)
-            
             # Perform move, evaluate
             board.move(move[0], move[1])
-            value = func(value, minimax(board, depth - 1, not is_major, h, a, b)[0])
-            ret = (value, move) 
+            c_minimax = minimax(board, depth - 1, not is_major, h, a, b)
+            diff = c_minimax[0] - opt_value
+
+            if diff * sign > 0:
+                opt_value = c_minimax[0]
+                opt_move = move
+
             board.restore(mm)
 
             if is_major:
-                a = max(a, value)
+                a = max(a, opt_value)
                 if a >= b:
-                    print(value) 
+                    print("Beta cut-off") 
                     break
             else:
-                b = min(b, value)
+                b = min(b, opt_value)
                 if b <= a:
-                    print(value)
+                    print("Alpha cut-off") 
                     break
+
+        ret = (opt_value, opt_move)
 
     return ret

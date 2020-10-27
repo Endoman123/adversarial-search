@@ -43,6 +43,4 @@ class AIPlayer(Player):
         self._depth = depth
 
     def get_move(self):
-        ret = minimax(self._board, self._depth, self._major)
-        print(ret)
-        return ret[1] 
+        return minimax(self._board, self._depth, self._major)[1] 
