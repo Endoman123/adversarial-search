@@ -121,6 +121,7 @@ class Board(cabc.Sequence):
                 p = b[r][c]
                 is_piece = p.lower() in "whm"
                 is_side = p.isupper() == major
+                p_set = "WHM" if major else "whm"
 
                 if is_piece and is_side:
                     c_from = (r, c)
@@ -130,7 +131,7 @@ class Board(cabc.Sequence):
                             continue
                         for j in range(max(0, c - 1), min(b_size, c + 2)):
                             p_to = b[i][j]
-                            if not p_to.lower() in "whm" or p.isupper() != major: # Check if move is valid
+                            if p_to not in p_set: # Check if move is valid
                                 moves += [(c_from, (i, j))] 
 
         return moves
