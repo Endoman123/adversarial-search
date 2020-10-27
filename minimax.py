@@ -14,7 +14,7 @@ def evaluate(board):
 
     n_major = sum(map(lambda x: x in "WHM", mm_eval))
     n_minor = sum(map(lambda x: x in "whm", mm_eval))
-   
+  
     # We need to cover winning states
     if n_major == 0: # Minor wins
         ret = -inf
@@ -22,6 +22,8 @@ def evaluate(board):
         ret = inf
     else: # Undecided
         ret = n_major - n_minor
+    
+    print(ret)
 
     return ret
 
@@ -38,16 +40,17 @@ def h_disable(**kwargs):
 def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
     b_metric = evaluate(board)
     b_moves = board.generate_moves(is_major) 
-    ret = (0, None) 
+    ret = (0, None)
 
     if depth == 0 or abs(b_metric) == inf:
-        ret = (h(board = board), None)
+        ret = (b_metric, None)
+
     else:
         moves_queue = PriorityQueue() 
         sign = 1 if is_major else -1
-        value = inf * -sign 
+        value = -inf * sign 
         mm = board.create_memento()   
-        
+         
         for m in b_moves:
             moves_queue.put((sign * h(move = m), m))
             
@@ -56,24 +59,23 @@ def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
             move = item[1]
             func = max if is_major else min
            
-            print(move)
+            print(item)
             
             # Perform move, evaluate
             board.move(move[0], move[1])
             value = func(value, minimax(board, depth - 1, not is_major, h, a, b)[0])
+            ret = (value, move) 
             board.restore(mm)
 
             if is_major:
                 a = max(a, value)
                 if a >= b:
-                    ret = item
+                    print(value) 
                     break
             else:
                 b = min(b, value)
                 if b <= a:
-                    ret = item
+                    print(value)
                     break
 
     return ret
-
-

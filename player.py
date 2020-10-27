@@ -16,6 +16,7 @@ class CLIPlayer(Player):
         moves = self._board.generate_moves(self._major)
        
         while True:
+            print(moves) 
             p_fromstr = input("Choose piece (as \"r c\"): ").strip()
             p_from = tuple([int(i) for i in p_fromstr.split()])
                 
@@ -25,6 +26,7 @@ class CLIPlayer(Player):
                 break
 
         while True:
+            print(moves)
             p_tostr = input("Choose destination (as \"r c\"): ").strip()
             p_to = tuple([int(i) for i in p_tostr.split()])
 

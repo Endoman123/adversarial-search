@@ -2,9 +2,9 @@ from player import *
 from board import Board
 
 if __name__ == "__main__":
-    board = Board(3)
+    board = Board(1)
     p1 = CLIPlayer(board, True)
-    p2 = AIPlayer(board, False, 4)
+    p2 = AIPlayer(board, False, 1)
 
     while True:
         print(board) 
