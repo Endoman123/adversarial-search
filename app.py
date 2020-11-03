@@ -18,7 +18,7 @@ def update(delta):
         if event.type == pygame.QUIT:
             running = False
 
-def draw(delta, screen):
+def draw(delta, screen): 
     screen.fill((100, 100, 100))
 
 if __name__ == "__main__":
