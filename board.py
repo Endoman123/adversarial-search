@@ -119,11 +119,9 @@ class Board(cabc.Sequence):
         for r in range(b_size):
             for c in range(b_size):
                 p = b[r][c]
-                is_piece = p.lower() in "whm"
-                is_side = p.isupper() == major
                 p_set = "WHM" if major else "whm"
 
-                if is_piece and is_side:
+                if p in p_set:
                     c_from = (r, c)
                     p_moves = []
                     for i in (r - 1, r + 1):
@@ -137,7 +135,7 @@ class Board(cabc.Sequence):
         return moves
 
     def __getitem__(self, i):
-        return self._board[i[0]]
+        return self._board[i]
 
     def __len__(self):
         return self._size
