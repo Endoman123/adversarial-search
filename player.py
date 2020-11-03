@@ -35,10 +35,11 @@ class CLIPlayer(Player):
 
 # Player that makes moves based on minimax algorithm
 class AIPlayer(Player):
-    def __init__(self, board, major, depth):
+    def __init__(self, board, major, depth, h):
         super().__init__(board, major)
 
         self._depth = depth
+        self._heuristic = h
 
     def get_move(self):
-        return minimax(self._board, self._depth, self._major)[1] 
+        return minimax(self._board, self._depth, self._major, self._heuristic)[1] 

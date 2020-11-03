@@ -35,6 +35,31 @@ def evaluate(board):
 def h_disable(**kwargs):
     return 0
 
+# Advantage: Takes number of possible winning "fights"
+def h_advantage(**kwargs):
+    board = kwargs["board"]
+    a_pieces = "WHM" if kwargs["major"] else "whm"
+    b_pieces = "mwh" if kwargs["major"] else "MWH"
+    ret = -inf
+
+    mm = board.create_memento()
+    
+    a_team = (sum(1 for i in mm if i == p) for p in a_pieces)
+    b_team = (sum(1 for i in mm if i == p) for p in b_pieces)
+
+    if all(i > 0 for i in a_team):
+        ret = sum(a - b for a, b in zip(a_team, b_team))
+
+    return ret
+
+# Moves: Takes number of viable moves
+def h_moves(**kwargs):
+    board = kwargs["board"]
+    
+    moves = tuple(m[1] for m in board.generate_moves(kwargs["major"]))
+
+    return sum(1 for m in moves if board[m[0]][m[1]] != "O")
+
 # Minimax with alpha-beta pruning
 # board: Board state
 # depth: Current depth to search
@@ -58,7 +83,7 @@ def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
         opt_move = ()
 
         for m in b_moves:
-            moves_queue.put((sign * h(move = m), m))
+            moves_queue.put((sign * h(board = board, major = is_major), m))
             
         while not moves_queue.empty():
             item = moves_queue.get()
