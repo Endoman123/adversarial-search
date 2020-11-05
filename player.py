@@ -68,7 +68,7 @@ class GUIPlayer(Player):
             
             if any(m[0] == pos for m in moves):
                 self.c_from = pos
-            elif self.c_from and any(m[1] == pos for m in moves):
+            elif self.c_from and any(m[1] == pos for m in moves if m[0] == self.c_from):
                 self.c_to = pos
     
     def get_move(self):
