@@ -51,7 +51,7 @@ def h_advantage(**kwargs):
     if all(i > 0 for i in a_team):
         ret = sum(a - b for a, b in zip(a_team, b_team))
 
-    return ret
+    return -ret
 
 # Moves: Takes number of viable moves
 def h_moves(**kwargs):
@@ -59,10 +59,10 @@ def h_moves(**kwargs):
     
     moves = tuple(m[1] for m in board.generate_moves(kwargs["major"]))
 
-    return sum(1 for m in moves if board[m[0]][m[1]] != "O")
-#Gets manhattan difference between Wumpus/Mage, Hero/Wumpus, and Mage/Hero
+    return -sum(1 for m in moves if board[m[0]][m[1]] != "O")
+
+# Gets manhattan difference between Wumpus/Mage, Hero/Wumpus, and Mage/Hero
 def h_manhattan(**kwargs):
-    
     ret = 0
     board = kwargs["board"]
     
@@ -73,8 +73,8 @@ def h_manhattan(**kwargs):
     b_pos = tuple(tuple((x, y) for x in range(len(board)) for p in b_set for y in range(len(board)) if board[y][x] == p))
     
     comp_pos = zip(a_pos, b_pos)
+
     # So at this point it should be (W * m, H * w, M * h)
-   
     for comp in comp_pos:
         min_dist = inf
         a = comp[0]
@@ -91,7 +91,6 @@ def h_manhattan(**kwargs):
  
 #Gets Euclidean difference between Wumpus/Mage, Hero/Wumpus, and Mage/Hero
 def h_euclidean(**kwargs):
-    
     ret = 0
     board = kwargs["board"]
     
@@ -102,8 +101,8 @@ def h_euclidean(**kwargs):
     b_pos = tuple(tuple((x, y) for x in range(len(board)) for p in b_set for y in range(len(board)) if board[y][x] == p))
     
     comp_pos = zip(a_pos, b_pos)
+
     # So at this point it should be (W * m, H * w, M * h)
-   
     for comp in comp_pos:
         min_dist = inf
         a = comp[0]
@@ -116,6 +115,7 @@ def h_euclidean(**kwargs):
     
     # Should have the sum of the minimum distances
     return ret
+
 #Tries to maximize space between pieces
 def h_spacing (**kwargs):
     board = kwargs["board"]
@@ -156,7 +156,7 @@ def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
     b_metric = evaluate(board)
     b_moves = board.generate_moves(is_major) 
     ret = (b_metric, None)
-   # print (b_moves)
+
     if depth == 0 or abs(b_metric) == inf:
         pass
     else:
@@ -167,7 +167,6 @@ def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
         opt_move = ()
 
         for m in b_moves:
-            #print ("hello")
             moves_queue.put((sign * h(board = board, major = is_major), m))
             
         while not moves_queue.empty():
@@ -196,4 +195,5 @@ def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
 
         ret = (opt_value, opt_move)
 
+    print(ret)
     return ret
