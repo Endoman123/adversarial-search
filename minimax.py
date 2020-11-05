@@ -59,6 +59,63 @@ def h_moves(**kwargs):
     moves = tuple(m[1] for m in board.generate_moves(kwargs["major"]))
 
     return sum(1 for m in moves if board[m[0]][m[1]] != "O")
+#Gets manhattan difference between Wumpus/Mage, Hero/Wumpus, and Mage/Hero
+def h_manhattan(**kwargs):
+    
+    ret = 0
+    board = kwargs["board"]
+    
+    a_set = "WHM" if kwargs["major"] else "whm"
+    b_set = "mwh" if kwargs["major"] else "MWH"
+    
+    a_pos = tuple(tuple((x, y) for x in range(len(board)) for p in a_set for y in range(len(board)) if board[y][x] == p))
+    b_pos = tuple(tuple((x, y) for x in range(len(board)) for p in b_set for y in range(len(board)) if board[y][x] == p))
+    
+    comp_pos = zip(a_pos, b_pos)
+    # So at this point it should be (W * m, H * w, M * h)
+   
+    for comp in comp_pos:
+        min_dist = -inf
+        a = comp[0]
+        b = comp[1]
+        #for a in comp[0]:
+            #for b in comp[1]:
+        min_dist = min(min_dist, sum(abs(m - n) for m, n in zip(a, b)))
+                #print(min_dist)
+
+        ret += min_dist
+    
+    # Should have the sum of the minimum distances
+    return ret
+ 
+#Gets Euclidean difference between Wumpus/Mage, Hero/Wumpus, and Mage/Hero
+def h_euclidean(**kwargs):
+    
+    ret = 0
+    board = kwargs["board"]
+    
+    a_set = "WHM" if kwargs["major"] else "whm"
+    b_set = "mwh" if kwargs["major"] else "MWH"
+    
+    a_pos = tuple(tuple((x, y) for x in range(len(board)) for p in a_set for y in range(len(board)) if board[y][x] == p))
+    b_pos = tuple(tuple((x, y) for x in range(len(board)) for p in b_set for y in range(len(board)) if board[y][x] == p))
+    
+    comp_pos = zip(a_pos, b_pos)
+    # So at this point it should be (W * m, H * w, M * h)
+   
+    for comp in comp_pos:
+        min_dist = -inf
+        a = comp[0]
+        b = comp[1]
+        #for a in comp[0]:
+            #for b in comp[1]:
+        min_dist = min(min_dist, sum((m - n) ** 2 for m, n in zip(a, b)) ** .5)
+                #print(min_dist)
+
+        ret += min_dist
+    
+    # Should have the sum of the minimum distances
+    return ret
 
 # Minimax with alpha-beta pruning
 # board: Board state
@@ -72,7 +129,7 @@ def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
     b_metric = evaluate(board)
     b_moves = board.generate_moves(is_major) 
     ret = (b_metric, None)
-
+   # print (b_moves)
     if depth == 0 or abs(b_metric) == inf:
         pass
     else:
@@ -83,6 +140,7 @@ def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
         opt_move = ()
 
         for m in b_moves:
+            #print ("hello")
             moves_queue.put((sign * h(board = board, major = is_major), m))
             
         while not moves_queue.empty():
