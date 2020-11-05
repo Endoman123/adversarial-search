@@ -58,14 +58,24 @@ class Board(cabc.Sequence):
 
         for row in m_arr:
             board_r = []
-            
+           
+            num = ""
             for c in row:
                 if c.isdigit():
-                    board_r += ["_" for _ in range(int(c))]
+                    num += c 
                 else:
-                    board_r += c
-                
+                    if num:
+                        board_r += ["_" for _ in range(int(num))] 
+                        num = ""
+
+                    board_r += c 
+
+            if num:
+                board_r += ["_" for _ in range(int(num))]
+
             if len(board_r) != len(self):
+                print(memento) 
+                print(board_r) 
                 raise Exception(f"Board sizes not equal! {len(board_r)} != {len(self)}")
 
             board += [board_r] 
@@ -131,7 +141,7 @@ class Board(cabc.Sequence):
                             p_to = b[i][j]
                             if p_to not in p_set: # Check if move is valid
                                 moves += [(c_from, (i, j))] 
-
+        
         return moves
 
     def __getitem__(self, i):

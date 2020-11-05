@@ -3,7 +3,6 @@ from math import *
 from queue import PriorityQueue
 from board import Board
 
-
 # Metric evaluation
 # Simply use the difference between the number of pieces
 # each side has
@@ -51,15 +50,16 @@ def h_advantage(**kwargs):
     if all(i > 0 for i in a_team):
         ret = sum(a - b for a, b in zip(a_team, b_team))
 
-    return -ret
+    return ret
 
 # Moves: Takes number of viable moves
 def h_moves(**kwargs):
     board = kwargs["board"]
-    
+    ret = -inf 
+
     moves = tuple(m[1] for m in board.generate_moves(kwargs["major"]))
 
-    return -sum(1 for m in moves if board[m[0]][m[1]] != "O")
+    return sum(1 for m in moves if board[m[0]][m[1]] != "O")
 
 # Gets manhattan difference between Wumpus/Mage, Hero/Wumpus, and Mage/Hero
 def h_manhattan(**kwargs):
@@ -89,7 +89,7 @@ def h_manhattan(**kwargs):
     # Should have the sum of the minimum distances
     return ret
  
-#Gets Euclidean difference between Wumpus/Mage, Hero/Wumpus, and Mage/Hero
+# Gets Euclidean difference between Wumpus/Mage, Hero/Wumpus, and Mage/Hero
 def h_euclidean(**kwargs):
     ret = 0
     board = kwargs["board"]
@@ -116,7 +116,7 @@ def h_euclidean(**kwargs):
     # Should have the sum of the minimum distances
     return ret
 
-#Tries to maximize space between pieces
+# Tries to maximize space between pieces
 def h_spacing (**kwargs):
     board = kwargs["board"]
     ret = 0
@@ -167,7 +167,7 @@ def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
         opt_move = ()
 
         for m in b_moves:
-            moves_queue.put((sign * h(board = board, major = is_major), m))
+            moves_queue.put((-h(board = board, major = is_major), m))
             
         while not moves_queue.empty():
             item = moves_queue.get()
@@ -194,6 +194,5 @@ def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
                     break
 
         ret = (opt_value, opt_move)
-
     print(ret)
     return ret

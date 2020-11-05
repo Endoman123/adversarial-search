@@ -1,9 +1,14 @@
 from player import *
 from board import Board
+from minimax import *
 import pygame
+import pygame_gui as gui
 from pygame import *
 from pygame.locals import *
 
+window_size = (800, 600)
+
+vis_ui = None
 vis_board = None
 vis_overlay = None
 vis_pieces = None
@@ -11,6 +16,9 @@ vis_pos = (10, 10)
 vis_margins = 10
 vis_gutters = 5
 vis_csize = 50
+
+board_mult = 2
+difficulty = 5
 
 sprites = {
     "W": None,
@@ -31,13 +39,13 @@ running = False
 def init():
     global vis_board, vis_overlay, vis_csize, vis_margins, vis_pieces, vis_gutters, sprites, board, p1, p2
     
-    board = Board(3)
+    board = Board(board_mult)
     p1 = GUIPlayer(board, True, vis_pos, vis_csize, vis_margins, vis_gutters)  
-    p2 = AIPlayer(board, False, 4)
+    p2 = AIPlayer(board, False, difficulty, h = h_advantage)
 
     board_size = len(board)
 
-    vis_bwidth = vis_margins + vis_gutters * board_size - vis_gutters + vis_csize * board_size
+    vis_bwidth = vis_margins * 2 + vis_gutters * board_size - vis_gutters + vis_csize * board_size
     vis_owidth = vis_bwidth - vis_margins 
 
     vis_board = Surface((vis_bwidth, vis_bwidth))
@@ -48,7 +56,7 @@ def init():
 
     for x in range(board_size):
         for y in range(board_size):
-            color = (255, 255, 255) if board[y][x] != "O" else (100, 0, 0)
+            color = (255, 255, 255) if board[y][x] != "O" else (50, 25, 0)
                 
             x_pos = vis_margins + x * vis_csize + x * vis_gutters - x
             y_pos = vis_margins + y * vis_csize + y * vis_gutters - y
@@ -89,7 +97,7 @@ def init():
         sprites[a].blit(spr_wand, (0, 0))
 
 def update(ev):
-    global board, cur_turn, running, vis_csize, vis_gutters, vis_margins, p1, p2
+    global cur_turn, running
 
     if cur_turn:
         p1.update(ev)
@@ -102,9 +110,24 @@ def update(ev):
     else:
         move = p2.get_move()
 
+        if len(move) != 2:
+            raise Exception(move)
+
         board.move(move[0], move[1])
         cur_turn = True
         print("Your turn")
+
+    # Check for end state
+    state = board.create_memento()
+    a_count = sum(map(lambda x: x in "WHM", state))
+    b_count = sum(map(lambda x: x in "whm", state))
+
+    if a_count == 0:
+        print("P2 Wins")
+        running = False
+    elif b_count == 0:
+        print("P1 Wins")
+        running = False
 
 def draw(screen): 
     global vis_pos, vis_board, vis_csize, vis_margins, vis_gutters, vis_pieces, sprites, board, p1
@@ -158,7 +181,8 @@ if __name__ == "__main__":
     pygame.init()
     init()
     
-    screen = pygame.display.set_mode([800, 600])
+    screen = pygame.display.set_mode(window_size)
+    vis_ui = gui.UIManager(window_size)
     clock = pygame.time.Clock() 
     running = True
 

@@ -84,7 +84,7 @@ class GUIPlayer(Player):
 
 # Player that makes moves based on minimax algorithm
 class AIPlayer(Player):
-    def __init__(self, board, major, depth, h = h_advantage):
+    def __init__(self, board, major, depth, h = h_disable):
         super().__init__(board, major)
 
         self._depth = depth
