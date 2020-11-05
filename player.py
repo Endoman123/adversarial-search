@@ -91,4 +91,4 @@ class AIPlayer(Player):
         self._heuristic = h
 
     def get_move(self):
-        return minimax(self._board, self._depth, self._major, self._heuristic)[1] 
+        return  minimax(self._board, self._depth, self._major, self._heuristic)[1]
