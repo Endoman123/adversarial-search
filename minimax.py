@@ -194,5 +194,5 @@ def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
                     break
 
         ret = (opt_value, opt_move)
-    print(ret)
+
     return ret
