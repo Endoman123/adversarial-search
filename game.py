@@ -1,4 +1,5 @@
 import os
+import minimax as ai
 from player import *
 from board import Board
 
@@ -7,9 +8,9 @@ p1 = None
 p2 = None
 
 if __name__ == "__main__":
-    board = Board(3)
+    board = Board(2)
     p1 = CLIPlayer(board, True)
-    p2 = AIPlayer(board, False, 4)
+    p2 = AIPlayer(board, False, 6, ai.h_moves)
 
     running = True
     move = None  
