@@ -3,6 +3,7 @@ from math import *
 from queue import PriorityQueue
 from board import Board
 
+
 # Metric evaluation
 # Simply use the difference between the number of pieces
 # each side has
@@ -75,7 +76,7 @@ def h_manhattan(**kwargs):
     # So at this point it should be (W * m, H * w, M * h)
    
     for comp in comp_pos:
-        min_dist = -inf
+        min_dist = inf
         a = comp[0]
         b = comp[1]
         #for a in comp[0]:
@@ -104,19 +105,45 @@ def h_euclidean(**kwargs):
     # So at this point it should be (W * m, H * w, M * h)
    
     for comp in comp_pos:
-        min_dist = -inf
+        min_dist = inf
         a = comp[0]
         b = comp[1]
         #for a in comp[0]:
             #for b in comp[1]:
         min_dist = min(min_dist, sum((m - n) ** 2 for m, n in zip(a, b)) ** .5)
-                #print(min_dist)
 
         ret += min_dist
     
     # Should have the sum of the minimum distances
     return ret
-
+#Tries to maximize space between pieces
+def h_spacing (**kwargs):
+    board = kwargs["board"]
+    ret = 0
+    
+    if (kwargs["major"]):
+        a_set = "WHM" 
+        pos_list = tuple(tuple((x, y) for x in range(len(board)) for p in a_set for y in range(len(board)) if board[y][x] == p))
+        
+        for pos in pos_list:
+            max_dist = -inf
+            for pos1 in pos_list:
+                if (pos != pos1):
+                    max_dist = max(max_dist, sum((m - n) for m, n in zip(pos, pos1)))
+            ret += max_dist
+    else:
+        a_set = "whm" 
+        pos_list = tuple(tuple((x, y) for x in range(len(board)) for p in a_set for y in range(len(board)) if board[y][x] == p))
+        
+        for pos in pos_list:
+            max_dist = -inf
+            for pos1 in pos_list:
+                if (pos != pos1):
+                    max_dist = max(max_dist, sum((m - n) for m, n in zip(pos, pos1)))
+            ret += max_dist
+    
+    return ret
+    
 # Minimax with alpha-beta pruning
 # board: Board state
 # depth: Current depth to search
