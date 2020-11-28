@@ -26,6 +26,7 @@ class Board(cabc.Sequence):
         # Step 4: Assign class members
         self._board = board
         self._size = size
+        self._fow = False
     
     # Create memento
     def create_memento(self):
@@ -143,6 +144,38 @@ class Board(cabc.Sequence):
                                 moves += [(c_from, (i, j))] 
         
         return moves
+   
+    # Generates an 'observation'
+    # Returns a string containing the relevant pieces surrounding it,
+    # no repeats.
+    def observe(self, x, y):
+        if not 0 <= x < self._size or not 0 <= y < self.size:
+            raise Exception("Cannot observe outside of board!")
+    
+        ret = ""
+        board = self._board
+        b_size = self._size
+        piece = board[y, x]
+
+        if piece in "WHMwhm": # We can do an observation here
+            team = "WHM" if piece.isupper() else "whm" 
+
+            for r in range(max(0, y - 1), min(b_size, y + 2)): 
+                for c in range(max(0, x - 1), min(b_size, x + 2)):
+                    if r == y and c == x:
+                        continue
+                    
+                    cur_piece = board[r, c]
+                    if cur_piece not in f"{team}_{ret}": # Test string checks if valid observation
+                        ret += cur_piece
+
+        return ret
+
+    def toggle_fow(self):
+        self._fow = not self._fow
+
+    def get_fow(self):
+        return self._fow
 
     def __getitem__(self, i):
         return self._board[i]

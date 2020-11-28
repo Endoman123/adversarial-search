@@ -12,10 +12,15 @@ vis_ui = None
 vis_board = None
 vis_overlay = None
 vis_pieces = None
+
 vis_pos = (10, 10)
+vis_bwidth = 580
 vis_margins = 10
 vis_gutters = 5
-vis_csize = 50
+vis_csize = -1
+
+pnl_main = None
+btn_fow = None
 
 board_mult = 2
 difficulty = 5
@@ -35,24 +40,24 @@ p2 = None
 cur_turn = True
 
 running = False
+debug = False
 
 def init():
-    global vis_board, vis_overlay, vis_csize, vis_margins, vis_pieces, vis_gutters, sprites, board, p1, p2
+    global vis_board, vis_overlay, vis_csize, vis_pieces, btn_fow, sprites, board, p1, p2
     
     board = Board(board_mult)
-    p1 = GUIPlayer(board, True, vis_pos, vis_csize, vis_margins, vis_gutters)  
-    p2 = AIPlayer(board, False, difficulty, h = h_advantage)
-
     board_size = len(board)
-
-    vis_bwidth = vis_margins * 2 + vis_gutters * board_size - vis_gutters + vis_csize * board_size
-    vis_owidth = vis_bwidth - vis_margins 
+    
+    vis_csize = vis_bwidth - vis_margins - vis_gutters * (board_size - 1)
+    vis_csize //= board_size 
+    vis_owidth = vis_bwidth - vis_margins * 2
 
     vis_board = Surface((vis_bwidth, vis_bwidth))
     vis_board.fill((0, 0, 0))
 
     vis_overlay = Surface((vis_owidth, vis_owidth), pygame.SRCALPHA)
     vis_pieces = Surface((vis_owidth, vis_owidth), pygame.SRCALPHA)
+
 
     for x in range(board_size):
         for y in range(board_size):
@@ -95,13 +100,20 @@ def init():
 
     for a in "Mm":
         sprites[a].blit(spr_wand, (0, 0))
+    
+    p1 = GUIPlayer(board, True, vis_pos, vis_csize, vis_margins, vis_gutters)  
+    p2 = AIPlayer(board, False, difficulty, h = h_advantage)
 
-def update(ev):
+def build_ui():
+    global btn_fow
+
+    btn_fow = gui.elements.UIButton(relative_rect=pygame.Rect((600, 10), (190, 30)),
+                                   text='Toggle FOW',
+                                   manager=vis_ui)
+def update(dt):
     global cur_turn, running
-
-    if cur_turn:
-        p1.update(ev)
-
+ 
+    if cur_turn: 
         move = p1.get_move()
 
         if move:
@@ -115,7 +127,6 @@ def update(ev):
 
         board.move(move[0], move[1])
         cur_turn = True
-        print("Your turn")
 
     # Check for end state
     state = board.create_memento()
@@ -123,80 +134,138 @@ def update(ev):
     b_count = sum(map(lambda x: x in "whm", state))
 
     if a_count == 0:
-        print("P2 Wins")
         running = False
     elif b_count == 0:
-        print("P1 Wins")
         running = False
 
-def draw(screen): 
-    global vis_pos, vis_board, vis_csize, vis_margins, vis_gutters, vis_pieces, sprites, board, p1
+def process_event(ev):
+    global fow, debug
 
+    if ev.type == pygame.USEREVENT and ev.user_type == gui.UI_BUTTON_PRESSED: 
+        if ev.ui_element == btn_fow:
+            board.toggle_fow()    
+    elif ev.type == KEYUP:
+        if ev.key == pygame.K_d:
+            debug = not debug
+            vis_ui.set_visual_debug_mode(debug)
+    elif cur_turn and ev.type == pygame.MOUSEBUTTONUP and ev.button == 1: # If the left mouse button is pressed
+        p1.consume_event(ev)
+        
+def draw(screen): 
     vis_overlay.convert_alpha()
     vis_overlay.fill(0) 
 
     vis_pieces.convert_alpha()
     vis_pieces.fill(0) 
 
-    if p1.c_from:
-        x = p1.c_from[1]
-        y = p1.c_from[0]
+    # Two different flows for rendering:
+    # one with FOW, one without FOW
+    if board.get_fow(): 
+        team = "WHM" if p1.get_major() else "whm"
 
-        x_pos = x * vis_csize + x * vis_gutters - x
-        y_pos = y * vis_csize + y * vis_gutters - y
+        for x in range(len(board)):
+            for y in range(len(board)):
+                p = board[y][x] 
+                x_pos = x * vis_csize + x * vis_gutters - x
+                y_pos = y * vis_csize + y * vis_gutters - y
+                
+                if p in team and sprites[p]:
+                    vis_pieces.blit(sprites[p], (x_pos, y_pos))
+                else:
+                    c_fow = (40, 40, 40)
+                    pygame.draw.rect(vis_overlay, c_fow, (x_pos, y_pos, vis_csize, vis_csize))
         
-        pygame.draw.rect(vis_overlay, (20, 60, 40), (x_pos, y_pos, vis_csize, vis_csize))
-        
-        for to in tuple(a[1] for a in p1.c_moves if a[0] == p1.c_from):  
-            x = to[1]
-            y = to[0]
-            
-            color = (20, 40, 60)
-            p_to = board[y][x]
-
-            if p_to == "O":
-                color = (60, 40, 60)
-            elif p_to in "whm":
-                color = (0, 100, 100)
-
+        if p1.c_from:
+            x = p1.c_from[1]
+            y = p1.c_from[0]
+    
             x_pos = x * vis_csize + x * vis_gutters - x
             y_pos = y * vis_csize + y * vis_gutters - y
             
-            pygame.draw.rect(vis_overlay, color, (x_pos, y_pos, vis_csize, vis_csize))    
+            pygame.draw.rect(vis_overlay, (20, 60, 40), (x_pos, y_pos, vis_csize, vis_csize))
+            
+            for to in tuple(a[1] for a in p1.c_moves if a[0] == p1.c_from):  
+                x = to[1]
+                y = to[0]
+                
+                color = (20, 40, 60)
+                p_to = board[y][x]
+    
+                x_pos = x * vis_csize + x * vis_gutters - x
+                y_pos = y * vis_csize + y * vis_gutters - y
+                
+                pygame.draw.rect(vis_overlay, color, (x_pos, y_pos, vis_csize, vis_csize))    
+    else:
+        for x in range(len(board)):
+            for y in range(len(board)):
+                p = board[y][x] 
+                x_pos = x * vis_csize + x * vis_gutters - x
+                y_pos = y * vis_csize + y * vis_gutters - y
+                
+                if p not in "_O" and sprites[p]:
+                    vis_pieces.blit(sprites[p], (x_pos, y_pos))
 
-    for x in range(len(board)):
-        for y in range(len(board)):
-            p = board[y][x] 
+        if p1.c_from:
+            x = p1.c_from[1]
+            y = p1.c_from[0]
+    
             x_pos = x * vis_csize + x * vis_gutters - x
             y_pos = y * vis_csize + y * vis_gutters - y
             
-            if p not in "_O" and sprites[p]:
-                vis_pieces.blit(sprites[p], (x_pos, y_pos))
-
+            pygame.draw.rect(vis_overlay, (20, 60, 40), (x_pos, y_pos, vis_csize, vis_csize))
+            
+            for to in tuple(a[1] for a in p1.c_moves if a[0] == p1.c_from):  
+                x = to[1]
+                y = to[0]
+                
+                color = (20, 40, 60)
+                p_to = board[y][x]
+    
+                if p_to == "O":
+                    color = (60, 40, 60)
+                elif p_to in "whm":
+                    color = (0, 100, 100)
+    
+                x_pos = x * vis_csize + x * vis_gutters - x
+                y_pos = y * vis_csize + y * vis_gutters - y
+                
+                pygame.draw.rect(vis_overlay, color, (x_pos, y_pos, vis_csize, vis_csize))    
+    
     screen.blit(vis_board, vis_pos) 
     screen.blit(vis_overlay, (vis_pos[0] + vis_margins, vis_pos[1] + vis_margins))
     screen.blit(vis_pieces, (vis_pos[0] + vis_margins, vis_pos[1] + vis_margins))
 
 if __name__ == "__main__":
     pygame.init()
-    init()
     
     screen = pygame.display.set_mode(window_size)
     vis_ui = gui.UIManager(window_size)
     clock = pygame.time.Clock() 
     running = True
 
-    while running:
-        event = pygame.event.poll()
-     
-        if event.type == pygame.QUIT:
-            running = False
-        else:
-            update(event)
+    build_ui()
+    init()
 
-            screen.fill((100, 100, 100))  
-            draw(screen)
-            pygame.display.flip()
+    while running:
+        dt = clock.tick(60) / 1000.0
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                break
+            else:
+                process_event(event)
+
+            vis_ui.process_events(event) 
+
+        update(dt)
+        screen.fill((100, 100, 100))  
+        draw(screen)
+
+        vis_ui.update(dt) 
+        vis_ui.draw_ui(screen)
+
+        pygame.display.flip()
 
     pygame.quit()
     

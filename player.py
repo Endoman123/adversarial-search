@@ -12,6 +12,9 @@ class Player():
     def __init__(self, board, major):
         self._board = board
         self._major = major
+    
+    def get_major(self):
+        return self._major
 
 # Player that makes moves based on command-line input
 class CLIPlayer(Player):
@@ -53,23 +56,22 @@ class GUIPlayer(Player):
 
     # Update func for game loop
     # Only active when it is the turn
-    def update(self, ev):
+    # The mouse input is most likely a left click, just process it.
+    def consume_event(self, ev):
         # Init moveset 
         if not self.c_moves:
             self.c_moves = self._board.generate_moves(self._major)
 
-        # Listen to mouse inputs 
-        if ev.type == MOUSEBUTTONUP and ev.button == 1:
-            # Store the moveset in a easy to use variable
-            moves = self.c_moves
+        # Store the moveset in a easy to use variable
+        moves = self.c_moves
 
-            # Convert mouse click to board pos 
-            pos = tuple((a - b - self._margin) // (self._cell_size + self._gutter) for a, b in zip(ev.pos, self._board_pos))[::-1]
-            
-            if any(m[0] == pos for m in moves):
-                self.c_from = pos
-            elif self.c_from and any(m[1] == pos for m in moves if m[0] == self.c_from):
-                self.c_to = pos
+        # Convert mouse click to board pos 
+        pos = tuple((a - b - self._margin) // (self._cell_size + self._gutter) for a, b in zip(ev.pos, self._board_pos))[::-1]
+        
+        if any(m[0] == pos for m in moves):
+            self.c_from = pos
+        elif self.c_from and any(m[1] == pos for m in moves if m[0] == self.c_from):
+            self.c_to = pos
     
     def get_move(self):
         ret = None 
