@@ -197,8 +197,32 @@ def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
 
     return ret
 
-
+""""
+def update()
+    c = # of opponents pieces --> evaluate()
+    board_prev = board from previous step
+    For each cell in old_board
+        cell.prob_wumpus = (1-1/c) * cell.prob_wumpus
+        for each neighbor of cell (use x+1, x-1 or whatever to get the neighbors)
+            sum += neighbor_cell.prob_wumpus * 1/(c * # of neighbors)
+        cell.prob_wumpus += sum
+    Repeat this process for each type of piece, pits are not updated
+    
+    For each cell containing our units
+    If cell has no stench, then for each adjacent cell
+        cell.prob_wumpus = 0
+    If cell does receive stench,
+        For each of the adjacent cells to the current one,
+            Sum the probability of wumpus being in that cell
+            Store this as sum
+        Then for each adjacent cell
+            Set cell.prob_wumpus = cell.prob_wumpus/sum
+        For each non-adjacent cells
+            cell.prob_wumpus = cell.prob_wumpus * (# of wumpi - 1/ # of wumpi)
+Repeat for each types of unit
 """
+"""
+Algorithm Overview
 1. First Initialize The Probabilities
 When Placing Pieces, set the probability that that cell has a piece to 1.
 Set the probability of it containing any other type of piece or pit to 0
