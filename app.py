@@ -22,7 +22,6 @@ vis_csize = -1
 pnl_main = None
 btn_fow = None
 
-board_mult = 2
 difficulty = 5
 
 sprites = {
@@ -42,7 +41,7 @@ cur_turn = True
 running = False
 debug = False
 
-def init():
+def init(board_mult):
     global vis_board, vis_overlay, vis_csize, vis_pieces, btn_fow, sprites, board, p1, p2
     
     board = Board(board_mult)
@@ -105,11 +104,15 @@ def init():
     p2 = AIPlayer(board, False, difficulty, h = h_advantage)
 
 def build_ui():
-    global btn_fow
+    global btn_fow, btn_init
+
+    btn_init = gui.elements.UIButton(relative_rect=pygame.Rect((600, 40), (190, 30)),
+                                     text='New Game',
+                                     manager=vis_ui)
 
     btn_fow = gui.elements.UIButton(relative_rect=pygame.Rect((600, 10), (190, 30)),
-                                   text='Toggle FOW',
-                                   manager=vis_ui)
+                                    text='Toggle FOW',
+                                    manager=vis_ui)
 def update(dt):
     global cur_turn, running
  
@@ -139,7 +142,7 @@ def update(dt):
         running = False
 
 def process_event(ev):
-    global fow, debug
+    global debug
 
     if ev.type == pygame.USEREVENT and ev.user_type == gui.UI_BUTTON_PRESSED: 
         if ev.ui_element == btn_fow:
@@ -195,6 +198,7 @@ def draw(screen):
                 y_pos = y * vis_csize + y * vis_gutters - y
                 
                 pygame.draw.rect(vis_overlay, color, (x_pos, y_pos, vis_csize, vis_csize))    
+
     else:
         for x in range(len(board)):
             for y in range(len(board)):
@@ -244,7 +248,7 @@ if __name__ == "__main__":
     running = True
 
     build_ui()
-    init()
+    init(2)
 
     while running:
         dt = clock.tick(60) / 1000.0
