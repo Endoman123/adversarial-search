@@ -196,3 +196,59 @@ def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
         ret = (opt_value, opt_move)
 
     return ret
+
+
+"""
+1. First Initialize The Probabilities
+When Placing Pieces, set the probability that that cell has a piece to 1.
+Set the probability of it containing any other type of piece or pit to 0
+For the rest of the board, set P(W), P(H), and P(M) to 0, and set P(P) to (d/3-1)/d where d is the length of the board
+We have to update the board structure to have cells that contain the probability for each of the pieces and the pit
+UI also needs to be updated to include probabilities on display during FOW display
+2. First update probabilities after opponent moves
+Set c = # of remaining opponent pieces
+After the opponent moves, for each type of unit, update the probabilities of the unit being there
+Might have to have two board structures, if updating probabilities on one board, will lead to incorrect calculations
+For each cell in old_board
+    cell.prob_wumpus = (1-1/c) * cell.prob_wumpus
+    for each neighbor of cell (use x+1, x-1 or whatever to get the neighbors)
+        sum += neighbor_cell.prob_wumpus * 1/(c * # of neighbors)
+    cell.prob_wumpus += sum
+Repeat this process for each type of piece, pits are not updated
+3. Then run the observe function on each of for the cells of each of your pieces
+For each cell containing our units
+    If cell has no stench, then for each adjacent cell
+        cell.prob_wumpus = 0
+    If cell does receive stench,
+        For each of the adjacent cells to the current one,
+            Sum the probability of wumpus being in that cell
+            Store this as sum
+        Then for each adjacent cell
+            Set cell.prob_wumpus = cell.prob_wumpus/sum
+        For each non-adjacent cells
+            cell.prob_wumpus = cell.prob_wumpus * (# of wumpi - 1/ # of wumpi)
+Repeat for each types of unit
+Might still have to have two copies of board, one old, one new. Not sure tho
+4. After we move, for the piece that was moved, we run the observe function
+Basically do step 3 but for just that cell for the piece that was moved.
+
+1. Normalize the Probability
+Do this after each of the four steps above
+    Sum = None
+    for each cell in board
+        Sum+= cell.prob_wumpus
+    alpha = 1/sum
+    Let w be the number of Wumpi
+    for each cell in board
+        cell.prob_wumpus = alpha * cell.prob_wumpus * w
+2. After performing the observe function for a cell
+    If it has a stench
+        Place all adjacent cells with non-zero probabilities into a list for the unit generating the observation
+        Do this for each type of unit
+        sum = Have to find probabilities for all configurations
+            For each entry in each list
+                sum += alpha_W*cell1.prob_wumpus*w * alpha_M*cell2.prob_mage*m
+        For each entry in each list
+            cell.prob_wumpus = cell.prob_wumpus * sum
+        Do for all lists and types of units
+"""
