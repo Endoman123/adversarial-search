@@ -12,6 +12,7 @@ class Board(cabc.Sequence):
         
         # Step 1: Initialize an empty board
         board = np.array([["_" for _ in range(size)] for _ in range(size)])
+
         """
         Creating the probability arrays. I'm open to doing this another way but this was to get the probability into some sort of code
         p_w = np.array([[0 for _ in range(size)] for _ in range(size)])

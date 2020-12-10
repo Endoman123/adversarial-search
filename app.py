@@ -15,14 +15,13 @@ vis_pieces = None
 
 vis_pos = (10, 10)
 vis_bwidth = 580
-vis_margins = 10
+vis_margins = 0
 vis_gutters = 5
 vis_csize = -1
 
 pnl_main = None
 btn_fow = None
-
-difficulty = 5
+win_init = None
 
 sprites = {
     "W": None,
@@ -41,7 +40,105 @@ cur_turn = True
 running = False
 debug = False
 
-def init(board_mult):
+# Class just to easily make a "New Game" dialog
+class UINewDialog(gui.elements.UIWindow):  
+    _cur_difficulty = 4
+    _cur_size = 2
+
+    def __init__(self, location, manager, window_title = "New Game", object_id = gui.core.ObjectID(object_id='#new_dialog', class_id=None)):
+        super().__init__(rect=pygame.Rect(location, (640, 480)), 
+                         manager=manager, 
+                         window_display_title=window_title,
+                         element_id=None, 
+                         object_id=object_id, 
+                         resizable=True,
+                         visible=True)
+
+        btn_layout_rect = pygame.Rect(0, 0, 100, 20)
+        btn_layout_rect.bottomright = (-30, -20)
+
+        # Bottom right anchor
+        anc_br = {'left': 'right', 'right': 'right', 'top': 'bottom', 'bottom': 'bottom'}
+
+        # Top left anchor
+        anc_tl = {'left': 'left', 'right': 'left', 'top': 'top', 'bottom': 'top'}
+        
+        # Top justify anchor
+        anc_tj = {'left': 'left', 'right': 'right', 'top': 'top', 'bottom': 'top'}
+
+        dd_choices = [repr(x) for x in range(1, 6)]
+
+        self._btn_confirm = gui.elements.UIButton(relative_rect=pygame.Rect(-220, -40, 100, 30),
+                                     text="Start",
+                                     manager=self.ui_manager,
+                                     container=self,
+                                     object_id='#btn_confirm',
+                                     anchors=anc_br)
+
+        self._btn_cancel = gui.elements.UIButton(relative_rect=pygame.Rect(-110, -40, 100, 30),
+                                     text="Cancel",
+                                     manager=self.ui_manager,
+                                     container=self,
+                                     object_id='#btn_confirm',
+                                     anchors=anc_br)
+
+        self._dd_difficulty = gui.elements.ui_drop_down_menu.UIDropDownMenu(options_list=dd_choices,
+                                                                            starting_option="4",
+                                                                            relative_rect=pygame.Rect(160, 10, 100, 20),
+                                                                            manager=self.ui_manager,
+                                                                            container=self,
+                                                                            anchors=anc_tj)
+
+        self._dd_size = gui.elements.ui_drop_down_menu.UIDropDownMenu(options_list=dd_choices,
+                                                                      starting_option="2",
+                                                                      relative_rect=pygame.Rect(160, 50, 100, 20),
+                                                                      manager=self.ui_manager,
+                                                                      container=self,
+                                                                      anchors=anc_tj)
+
+        self._lbl_difficulty = gui.elements.UILabel(relative_rect=pygame.Rect(10, 10, 140, 20),
+                                                    text="Difficulty: ",
+                                                    manager=self.ui_manager,
+                                                    container=self,
+                                                    parent_element=self._dd_difficulty,
+                                                    anchors=anc_tl)
+        
+        self._lbl_size = gui.elements.UILabel(relative_rect=pygame.Rect(10, 50, 140, 20),
+                                                    text="Size: ",
+                                                    manager=self.ui_manager,
+                                                    container=self,
+                                                    parent_element=self._dd_size,
+                                                    anchors=anc_tl)
+        self.set_blocking(True)
+
+    def process_event(self, event: pygame.event.Event) -> bool: 
+        consumed_event = super().process_event(event)
+
+
+        if (event.type == pygame.USEREVENT and event.user_type == gui.UI_DROP_DOWN_MENU_CHANGED):
+            if event.ui_element == self._dd_difficulty:
+                self._cur_difficulty = int(event.text)
+            if event.ui_element == self._dd_size:
+                self._cur_size = int(event.text)
+
+        if (event.type == pygame.USEREVENT and event.user_type == gui.UI_BUTTON_PRESSED):
+            if (event.ui_element == self._btn_cancel):
+                self.kill()
+
+            if (event.ui_element == self._btn_confirm):
+                event_data = {'user_type': gui.UI_CONFIRMATION_DIALOG_CONFIRMED,
+                              'difficulty': int(self._cur_difficulty),
+                              'size': int(self._cur_size),
+                              'ui_element': self,
+                              'ui_object_id': self.most_specific_combined_id}
+
+                new_event = pygame.event.Event(pygame.USEREVENT, event_data)
+                pygame.event.post(new_event)
+                self.kill()
+
+        return consumed_event
+
+def init(board_mult, difficulty):
     global vis_board, vis_overlay, vis_csize, vis_pieces, btn_fow, sprites, board, p1, p2
     
     board = Board(board_mult)
@@ -60,7 +157,7 @@ def init(board_mult):
 
     for x in range(board_size):
         for y in range(board_size):
-            color = (255, 255, 255) if board[y][x] != "O" else (50, 25, 0)
+            color = (50, 50, 50) if board[y][x] != "O" else (50, 20, 0)
                 
             x_pos = vis_margins + x * vis_csize + x * vis_gutters - x
             y_pos = vis_margins + y * vis_csize + y * vis_gutters - y
@@ -104,7 +201,7 @@ def init(board_mult):
     p2 = AIPlayer(board, False, difficulty, h = h_advantage)
 
 def build_ui():
-    global btn_fow, btn_init
+    global btn_fow, btn_init, win_init
 
     btn_init = gui.elements.UIButton(relative_rect=pygame.Rect((600, 40), (190, 30)),
                                      text='New Game',
@@ -113,6 +210,9 @@ def build_ui():
     btn_fow = gui.elements.UIButton(relative_rect=pygame.Rect((600, 10), (190, 30)),
                                     text='Toggle FOW',
                                     manager=vis_ui)
+
+    lbl_obs = None # gui.elements.UILabel()
+
 def update(dt):
     global cur_turn, running
  
@@ -136,17 +236,30 @@ def update(dt):
     a_count = sum(map(lambda x: x in "WHM", state))
     b_count = sum(map(lambda x: x in "whm", state))
 
-    if a_count == 0:
-        running = False
-    elif b_count == 0:
+    if a_count == 0 or b_count == 0:
         running = False
 
 def process_event(ev):
-    global debug
+    global debug, running
 
-    if ev.type == pygame.USEREVENT and ev.user_type == gui.UI_BUTTON_PRESSED: 
-        if ev.ui_element == btn_fow:
-            board.toggle_fow()    
+    if ev.type == pygame.QUIT:
+        running = False
+        return
+
+    if ev.type == pygame.USEREVENT:
+        if ev.user_type == gui.UI_BUTTON_PRESSED: 
+            if ev.ui_element == btn_fow:
+                board.toggle_fow()    
+            if ev.ui_element == btn_init:
+                UINewDialog(location=(10, 10),
+                            manager=vis_ui)
+
+        if ev.user_type == gui.UI_CONFIRMATION_DIALOG_CONFIRMED:
+           d = ev.difficulty
+           s = ev.size
+
+           init(s, d)
+
     elif ev.type == KEYUP:
         if ev.key == pygame.K_d:
             debug = not debug
@@ -248,22 +361,18 @@ if __name__ == "__main__":
     running = True
 
     build_ui()
-    init(2)
+    init(2, 5)
 
     while running:
         dt = clock.tick(60) / 1000.0
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-                break
-            else:
-                process_event(event)
-
             vis_ui.process_events(event) 
+            process_event(event)
 
+            
         update(dt)
-        screen.fill((100, 100, 100))  
+        screen.fill((0, 0, 0))  
         draw(screen)
 
         vis_ui.update(dt) 
