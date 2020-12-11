@@ -197,6 +197,18 @@ def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
 
     return ret
 
+# Minimax using fog of war probability calculations
+# board: Board state
+# prime: Board probabilities, map of 2d arrays
+# depth: Current depth to search
+# is_major: Whether the player is the major player
+# h: Heuristic function, defaults to h_disable
+# a: Alpha
+# b: Beta
+# Returns the move and value best suited to transition into the most optimal state
+def minimax_p(board, prime, depth, is_major, h = h_disable, a = -inf, b = inf):
+    pass
+
 """"
 def update()
     c = # of opponents pieces --> evaluate()

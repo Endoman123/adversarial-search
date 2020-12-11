@@ -198,7 +198,7 @@ def init(board_mult, difficulty):
         sprites[a].blit(spr_wand, (0, 0))
     
     p1 = GUIPlayer(board, True, vis_pos, vis_csize, vis_margins, vis_gutters)  
-    p2 = AIPlayer(board, False, difficulty, h = h_advantage)
+    p2 = MMPlayer(board, False, difficulty, h = h_advantage)
 
 def build_ui():
     global btn_fow, btn_init, win_init
@@ -366,7 +366,7 @@ if __name__ == "__main__":
     while running:
         dt = clock.tick(60) / 1000.0
 
-        for event in pygame.event.get():
+        for event in pygame.event.get(): 
             vis_ui.process_events(event) 
             process_event(event)
 

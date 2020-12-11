@@ -85,12 +85,24 @@ class GUIPlayer(Player):
         return ret
 
 # Player that makes moves based on minimax algorithm
-class AIPlayer(Player):
+class MMPlayer(Player): 
     def __init__(self, board, major, depth, h = h_disable):
         super().__init__(board, major)
 
         self._depth = depth
         self._heuristic = h
 
+
     def get_move(self):
-        return  minimax(self._board, self._depth, self._major, self._heuristic)[1]
+        return minimax(self._board, self._depth, self._major, self._heuristic)[1]
+
+# Player that makes moves based on probabilistic guesses
+class PPlayer(Player): 
+    def __init__(self, board, major):
+        super().__init__(board, major)
+
+        self._prime = {x: [[0 for _ in row] for row in board] for x in "O"}
+
+    def get_move(self):
+        return minimax(self._board, self._depth, self._major, self._heuristic)[1]
+

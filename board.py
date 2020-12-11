@@ -4,6 +4,12 @@ import itertools
 
 # Board representation
 # Char board, with Originator structure
+# Key:
+# W/H/M = Wumpus/Human/Mage
+# O = Pit
+# _ = Empty
+# CAPS = major
+# lower = minor
 class Board(cabc.Sequence):
     # Initialize the board with some multiple d
     # The board will be 3dx3d large.
@@ -55,7 +61,7 @@ class Board(cabc.Sequence):
         # Step 4: Assign class members
         self._board = board
         self._size = size
-        self._fow = False
+        self._fow = True
     
     # Create memento
     def create_memento(self):
@@ -216,10 +222,9 @@ class Board(cabc.Sequence):
                         sum += prob[x][y] * 1/(c * num)
                 new_prob[i][j] += sum
 
-    # Know that we will change how we do the probability tables. Just want  to get it out
+    # Know that we will change how we do the probability tables. Just want to get it out
     # Updates the probabilities before player moves, surveying where all current pieces are
     def update_on_player(self, occupied, p_p, p_w, p_h, p_m):
-
         # Fringe to hold all cells that contain observations
         fringe = []
         for (x,y) in occupied:
@@ -284,7 +289,7 @@ class Board(cabc.Sequence):
             p_w[x][y] *= p_o
 
     # Finds the P(O) value using all the possible unit combos, cell combos, alpha values, and max unit values
-    def get_p_o(self, unit_combos, location_combos, alpha_w, alpha_m, alpha_h, alpha_p,max_w, max_h, max_m, max_p, p_p, p_h, p_w, p_m):
+    def get_p_o(self, unit_combos, location_combos, alpha_w, alpha_m, alpha_h, alpha_p, max_w, max_h, max_m, max_p, p_p, p_h, p_w, p_m):
         sum = 0
         for units in unit_combos:
             for cells in location_combos:
