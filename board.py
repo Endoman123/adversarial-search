@@ -184,7 +184,7 @@ class Board(cabc.Sequence):
     # Returns a string containing the relevant pieces surrounding it,
     # no repeats.
     def observe(self, x, y):
-        if not 0 <= x < self._size or not 0 <= y < self.size:
+        if not 0 <= x < self._size or not 0 <= y < self._size:
             raise Exception("Cannot observe outside of board!")
     
         ret = ""

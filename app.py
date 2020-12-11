@@ -40,6 +40,18 @@ cur_turn = True
 running = False
 debug = False
 
+# Top right anchor
+anc_tr = {'left': 'right', 'right': 'right', 'top': 'top', 'bottom': 'top'}
+
+# Bottom right anchor
+anc_br = {'left': 'right', 'right': 'right', 'top': 'bottom', 'bottom': 'bottom'}
+
+# Top left anchor
+anc_tl = {'left': 'left', 'right': 'left', 'top': 'top', 'bottom': 'top'}
+
+# Top justify anchor
+anc_tj = {'left': 'left', 'right': 'right', 'top': 'top', 'bottom': 'top'}
+
 # Class just to easily make a "New Game" dialog
 class UINewDialog(gui.elements.UIWindow):  
     _cur_difficulty = 4
@@ -56,15 +68,6 @@ class UINewDialog(gui.elements.UIWindow):
 
         btn_layout_rect = pygame.Rect(0, 0, 100, 20)
         btn_layout_rect.bottomright = (-30, -20)
-
-        # Bottom right anchor
-        anc_br = {'left': 'right', 'right': 'right', 'top': 'bottom', 'bottom': 'bottom'}
-
-        # Top left anchor
-        anc_tl = {'left': 'left', 'right': 'left', 'top': 'top', 'bottom': 'top'}
-        
-        # Top justify anchor
-        anc_tj = {'left': 'left', 'right': 'right', 'top': 'top', 'bottom': 'top'}
 
         dd_choices = [repr(x) for x in range(1, 6)]
 
@@ -104,11 +107,11 @@ class UINewDialog(gui.elements.UIWindow):
                                                     anchors=anc_tl)
         
         self._lbl_size = gui.elements.UILabel(relative_rect=pygame.Rect(10, 50, 140, 20),
-                                                    text="Size: ",
-                                                    manager=self.ui_manager,
-                                                    container=self,
-                                                    parent_element=self._dd_size,
-                                                    anchors=anc_tl)
+                                              text="Size: ",
+                                              manager=self.ui_manager,
+                                              container=self,
+                                              parent_element=self._dd_size,
+                                              anchors=anc_tl)
         self.set_blocking(True)
 
     def process_event(self, event: pygame.event.Event) -> bool: 
@@ -137,6 +140,18 @@ class UINewDialog(gui.elements.UIWindow):
                 self.kill()
 
         return consumed_event
+
+def load_resources():
+    global spr_wumpus, spr_humanoid, spr_bow, spr_wand, spr_breeze, spr_noise, spr_heat, spr_stench
+
+    spr_wumpus = pygame.image.load("wumpus.png")
+    spr_humanoid = pygame.image.load("humanoid.png")
+    spr_bow = pygame.image.load("bow.png")
+    spr_wand = pygame.image.load("wand.png")
+    spr_stench = pygame.image.load("stench.png")
+    spr_heat = pygame.image.load("heat.png")
+    spr_noise = pygame.image.load("noise.png")
+    spr_breeze = pygame.image.load("breeze.png")
 
 def init(board_mult, difficulty):
     global vis_board, vis_overlay, vis_csize, vis_pieces, btn_fow, sprites, board, p1, p2
@@ -170,20 +185,13 @@ def init(board_mult, difficulty):
     c_minor = Surface((vis_csize, vis_csize))
     c_minor.fill((255, 0, 0)) 
 
-    spr_wumpus = pygame.image.load("wumpus.png")
-    spr_wumpus = pygame.transform.scale(spr_wumpus, (vis_csize, vis_csize))
-    
-    spr_humanoid = pygame.image.load("humanoid.png")
-    spr_humanoid = pygame.transform.scale(spr_humanoid, (vis_csize, vis_csize))
+    wumpus = pygame.transform.scale(spr_wumpus, (vis_csize, vis_csize))
+    humanoid = pygame.transform.scale(spr_humanoid, (vis_csize, vis_csize))
+    bow = pygame.transform.scale(spr_bow, (vis_csize, vis_csize))
+    wand = pygame.transform.scale(spr_wand, (vis_csize, vis_csize))
 
-    spr_bow = pygame.image.load("bow.png")
-    spr_bow = pygame.transform.scale(spr_bow, (vis_csize, vis_csize))
-
-    spr_wand = pygame.image.load("wand.png")
-    spr_wand = pygame.transform.scale(spr_wand, (vis_csize, vis_csize))
-
-    sprites.update({a: spr_wumpus.copy() for a in "Ww"})
-    sprites.update({a: spr_humanoid.copy() for a in "HhMm"})
+    sprites.update({a: wumpus.copy() for a in "Ww"})
+    sprites.update({a: humanoid.copy() for a in "HhMm"})
 
     for a in "WHM":
         sprites[a].blit(c_major, (0, 0), special_flags = pygame.BLEND_RGBA_MULT)
@@ -192,31 +200,55 @@ def init(board_mult, difficulty):
         sprites[a].blit(c_minor, (0, 0), special_flags = pygame.BLEND_RGBA_MULT)
 
     for a in "Hh":
-        sprites[a].blit(spr_bow, (0, 0))
+        sprites[a].blit(bow, (0, 0))
 
     for a in "Mm":
-        sprites[a].blit(spr_wand, (0, 0))
+        sprites[a].blit(wand, (0, 0))
     
     p1 = GUIPlayer(board, True, vis_pos, vis_csize, vis_margins, vis_gutters)  
     p2 = MMPlayer(board, False, difficulty, h = h_advantage)
 
 def build_ui():
-    global btn_fow, btn_init, win_init
+    global btn_fow, btn_init, srf_obs, pnl_obs
 
-    btn_init = gui.elements.UIButton(relative_rect=pygame.Rect((600, 40), (190, 30)),
+    btn_init = gui.elements.UIButton(relative_rect=pygame.Rect(-200, -40, 190, 30),
                                      text='New Game',
-                                     manager=vis_ui)
+                                     manager=vis_ui,
+                                     anchors=anc_br)
 
-    btn_fow = gui.elements.UIButton(relative_rect=pygame.Rect((600, 10), (190, 30)),
+    btn_fow = gui.elements.UIButton(relative_rect=pygame.Rect(-200, -70, 190, 30),
                                     text='Toggle FOW',
-                                    manager=vis_ui)
+                                    manager=vis_ui,
+                                    anchors=anc_br)
 
-    lbl_obs = None # gui.elements.UILabel()
+    
+    lbl_obs = gui.elements.UILabel(relative_rect=pygame.Rect(-200, 10, 190, 30),
+                                   text="Observations: ",
+                                   manager=vis_ui,
+                                   anchors=anc_tr)
+
+    pnl_obs = gui.elements.UIPanel(relative_rect=pygame.Rect(-200, 50, 190, 50),
+                                   starting_layer_height=1,
+                                   manager=vis_ui,
+                                   anchors=anc_tr)
+    size = (10, 10)
+ 
+    stench = pygame.transform.scale(spr_stench, (20, 20)) 
+    noise = pygame.transform.scale(spr_noise, (20, 20))
+    heat = pygame.transform.scale(spr_heat, (20, 20))
+    breeze = pygame.transform.scale(spr_breeze, (20, 20))
+
+    srf_obs = {
+            'W': gui.elements.UIImage(relative_rect=pygame.Rect(10, 10, 20, 20), image_surface=stench, manager=vis_ui, container=pnl_obs, visible=False), 
+            'H': gui.elements.UIImage(relative_rect=pygame.Rect(30, 10, 20, 20), image_surface=noise, manager=vis_ui, container=pnl_obs, visible=False),
+            'M': gui.elements.UIImage(relative_rect=pygame.Rect(50, 10, 20, 20), image_surface=heat, manager=vis_ui, container=pnl_obs, visible=False),
+            'O': gui.elements.UIImage(relative_rect=pygame.Rect(70, 10, 20, 20), image_surface=breeze, manager=vis_ui, container=pnl_obs, visible=False),
+            }
 
 def update(dt):
     global cur_turn, running
  
-    if cur_turn: 
+    if cur_turn:
         move = p1.get_move()
 
         if move:
@@ -294,7 +326,15 @@ def draw(screen):
         if p1.c_from:
             x = p1.c_from[1]
             y = p1.c_from[0]
-    
+   
+            obs = board.observe(x, y).upper()
+ 
+            for s in "WHMO":
+                if s in obs:
+                    srf_obs[s].show()
+                else:
+                    srf_obs[s].hide()
+
             x_pos = x * vis_csize + x * vis_gutters - x
             y_pos = y * vis_csize + y * vis_gutters - y
             
@@ -347,14 +387,15 @@ def draw(screen):
                 y_pos = y * vis_csize + y * vis_gutters - y
                 
                 pygame.draw.rect(vis_overlay, color, (x_pos, y_pos, vis_csize, vis_csize))    
-    
+
     screen.blit(vis_board, vis_pos) 
     screen.blit(vis_overlay, (vis_pos[0] + vis_margins, vis_pos[1] + vis_margins))
     screen.blit(vis_pieces, (vis_pos[0] + vis_margins, vis_pos[1] + vis_margins))
 
 if __name__ == "__main__":
     pygame.init()
-    
+    load_resources() 
+
     screen = pygame.display.set_mode(window_size)
     vis_ui = gui.UIManager(window_size)
     clock = pygame.time.Clock() 
