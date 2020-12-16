@@ -11,15 +11,15 @@ def initialize(size):
     p_m = np.array([[0. for _ in range(size)] for _ in range(size)])
     p_o = np.array([[0. for _ in range(size)] for _ in range(size)])
 
-    p_w[size - 1][::3] = [1.0 for _ in range(d)]
-    p_h[size - 1][1::3] = [1.0 for _ in range(d)]
-    p_m[size - 1][2::3] = [1.0 for _ in range(d)]
+    p_w[0][::3] = [1 / d for _ in range(d)]
+    p_h[0][1::3] = [1 / d for _ in range(d)]
+    p_m[0][2::3] = [1 / d for _ in range(d)]
 
     pit_prob = (1. - d / 3.) / d
     p_o[1:-1, :] = [ [ pit_prob for _ in range(size) ] for _ in range(1, size - 1) ] 
 
     prob_table = {"O": p_o, "W": p_w, "M": p_m, "H": p_h}
-    remaining = {x: d for x in "WHM"}
+    remaining = size
 
     return prob_table, remaining
 
@@ -30,33 +30,42 @@ def eval():
 
 
 # Updates all of the probability boards after the opponent has moved
-# remaining = dictionary of total remaining pieces
+# remaining = total remaining pieces
 # prob_table = dictionary of the probability tables
-# neighbors = 2D array of the number of neighbors each cell has
-def transition(remaining, prob_table, neighbors):
-    prob_table['W'] = update_after_opp(remaining['W'], prob_table['W'], neighbors)
-    prob_table['M'] = update_after_opp(remaining['M'], prob_table['M'], neighbors)
-    prob_table['H'] = update_after_opp(remaining['H'], prob_table['H'], neighbors)
-    prob_table['O'] = normalize_prob(prob_table['O'], remaining['O'])
+def update_probabilities(remaining, prob_table):
+    transition(prob_table['W'], remaining)
+    transition(prob_table['M'], remaining)
+    transition(prob_table['H'], remaining)
+    # prob_table['O'] = normalize_prob(prob_table['O'], remaining['O'])
 
+def transition(prob_board, c):
+    prime_board = np.array(prob_board) 
+  
+    print(prime_board)
+    size = len(prime_board)
+    for i in range(size):
+        for j in range(size):
+            # Neighbors calc
+            neighbors = 0
+            for m in range(max(0, i - 1), min(size, i + 2)):
+                for n in range(max(0, j - 1), min(size, j + 2)):
+                    if m == i and n == j:
+                        continue
+
+                    neighbors += prime_board[m][n]  
+
+            prob_board[i, j] = (1 - 1/c) * prime_board[i][j] + neighbors  
 
 def guess_move(board, major, prob_table, remaining):
     # Step 1: Generate moves
     moves = board.generate_moves(major)
 
-    neighbors = np.array([[0 for _ in range(len(board))] for _ in range(len(board))])
-
-    # Step 2: Generate neighbors list
-    for move in moves:
-        r, c = move[0]
-        neighbors[r, c] += 1
-        
-    print(neighbors)
-
-    # Step 3: Update probabilities
-    transition(remaining, prob_table, neighbors) 
-    
-    # Step 4: Rate a best move based on the given
+    # Step 2: Update probabilities
+    update_probabilities(remaining, prob_table) 
+   
+    print(prob_table)
+   
+    # Step 3: Rate a best move based on the given
     return moves[0] 
 
 

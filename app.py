@@ -249,6 +249,17 @@ def update(dt):
     global cur_turn, running
  
     if cur_turn:
+        for s in "WHMO":             
+            srf_obs[s].hide()
+      
+        if p1.c_from: 
+            y, x = p1.c_from
+            obs = board.observe(x, y).upper()
+
+            for s in "WHMO":
+                if s in obs:
+                    srf_obs[s].show()
+
         move = p1.get_move()
 
         if move:
@@ -330,17 +341,8 @@ def draw(screen):
                     pygame.draw.rect(vis_overlay, c_fow, (x_pos, y_pos, vis_csize, vis_csize))
 
         if p1.c_from:
-            x = p1.c_from[1]
-            y = p1.c_from[0]
+            y, x = p1.c_from
    
-            obs = board.observe(x, y).upper()
-
-            for s in "WHMO":
-                if s in obs:
-                    srf_obs[s].show()
-                else:
-                    srf_obs[s].hide()
-
             x_pos = x * vis_csize + x * vis_gutters - x
             y_pos = y * vis_csize + y * vis_gutters - y
             
