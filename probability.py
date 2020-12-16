@@ -2,30 +2,29 @@ import board
 import numpy as np
 import itertools
 
-
 # Initializes the probabilities boards in a map of 2d arrays
-def initialize(d):
-    size = d * 3
+def initialize(size):
+    d = int(size / 3)
 
-    p_w = np.array([[0 for _ in range(size)] for _ in range(size)])
-    p_h = np.array([[0 for _ in range(size)] for _ in range(size)])
-    p_m = np.array([[0 for _ in range(size)] for _ in range(size)])
-    p_p = np.array([[0 for _ in range(size)] for _ in range(size)])
+    p_w = np.array([[0. for _ in range(size)] for _ in range(size)])
+    p_h = np.array([[0. for _ in range(size)] for _ in range(size)])
+    p_m = np.array([[0. for _ in range(size)] for _ in range(size)])
+    p_o = np.array([[0. for _ in range(size)] for _ in range(size)])
 
-    p_w[size - 1][::3].p_w = [1.0 for _ in range(d)]
+    p_w[size - 1][::3] = [1.0 for _ in range(d)]
     p_h[size - 1][1::3] = [1.0 for _ in range(d)]
     p_m[size - 1][2::3] = [1.0 for _ in range(d)]
-    for i in range(1, size - 1):
-        for j in range(1, size):
-            p_p[i][j] = (d / 3 - 1) / d
 
-    prob_table = {"b": p_p, "s": p_w, "h": p_m, "n": p_h}
+    pit_prob = (1. - d / 3.) / d
+    p_o[1:-1, :] = [ [ pit_prob for _ in range(size) ] for _ in range(1, size - 1) ] 
+
+    prob_table = {"O": p_o, "W": p_w, "M": p_m, "H": p_h}
     return prob_table
 
 
 # Probabilistics AI
 def eval():
-    pass
+   pass 
 
 
 # Updates all of the probability boards after the opponent has moved
@@ -33,10 +32,10 @@ def eval():
 # prob_table = dictionary of the probability tables
 # neighbors = 2D array of the number of neighbors each cell has
 def transition(remaining, prob_table, neighbors):
-    prob_table['s'] = update_after_opp(remaining['s'], prob_table['s'], neighbors)
-    prob_table['h'] = update_after_opp(remaining['h'], prob_table['h'], neighbors)
-    prob_table['n'] = update_after_opp(remaining['n'], prob_table['n'], neighbors)
-    prob_table['b'] = normalize_prob(prob_table['b'], remaining['b'])
+    prob_table['W'] = update_after_opp(remaining['W'], prob_table['W'], neighbors)
+    prob_table['M'] = update_after_opp(remaining['M'], prob_table['M'], neighbors)
+    prob_table['H'] = update_after_opp(remaining['H'], prob_table['H'], neighbors)
+    prob_table['O'] = normalize_prob(prob_table['O'], remaining['O'])
 
 
 def guess_move():
@@ -76,7 +75,7 @@ def update_after_player(occupied, prob_table, size):
     # max_units is a dictionary of the max number of pieces that can be adjacent to one of our units
     # adjacent is a list that will contain all the adjacent cells to an occupied cell that yields an observation
     units = ""
-    max_units = {"b": 0, "s": 0, "n": 0, "h": 0}
+    max_units = {"O": 0, "W": 0, "H": 0, "M": 0}
     adjacent = []
     # First finds all of the occupied cells that yield observations
     for (x, y) in occupied:
@@ -88,25 +87,17 @@ def update_after_player(occupied, prob_table, size):
             for i in range(max(0, x - 1), min(size, x + 2)):
                 for j in range(max(0, y - 1), min(size, y + 2)):
                     adjacent.append(i, j)
-            # Append the observation itself to units
-            if observation == "b":
-                units += "p"
-            elif observation == "s":
-                units += "w"
-            elif observation == "n":
-                units += "h"
-            else:
-                units += "m"
+
             # Increment the max number of units
             max_units[observation] += 1
             # Otherwise set all of the probabilities of the adjacent cells to 0
         else:
             for i in range(max(0, x - 1), min(size, x + 2)):
                 for j in range(max(0, y - 1), min(size, y + 2)):
-                    prob_table['b'][i][j] = 0
-                    prob_table['s'][i][j] = 0
-                    prob_table['n'][i][j] = 0
-                    prob_table['h'][i][j] = 0
+                    prob_table['W'][i][j] = 0
+                    prob_table['M'][i][j] = 0
+                    prob_table['H'][i][j] = 0
+                    prob_table['O'][i][j] = 0
 
     # These functions find all the possible combinations of cells and units that could result from our observations
     data = [0] * len(units)
@@ -115,16 +106,16 @@ def update_after_player(occupied, prob_table, size):
     unit_combos = get_unit_combos(units)
 
     # Find the alpha values
-    alphas = {"b": get_alpha(prob_table["b"]), "s": get_alpha(prob_table["s"]), "h": get_alpha(prob_table["h"]),
-              "n": get_alpha(prob_table["n"])}
+    alphas = {"O": get_alpha(prob_table["O"]), "W": get_alpha(prob_table["W"]), "M": get_alpha(prob_table["M"]),
+              "H": get_alpha(prob_table["H"])}
 
     # Calculates the P(O) value, then resets the probabilities on the board accordingly
     p_o = get_p_o(prob_table, unit_combos, combos, alphas, max_units)
     for (x, y) in adjacent:
-        prob_table["b"][x][y] *= p_o
-        prob_table["s"][x][y] *= p_o
-        prob_table["h"][x][y] *= p_o
-        prob_table["n"][x][y] *= p_o
+        prob_table["W"][x][y] *= p_o
+        prob_table["M"][x][y] *= p_o
+        prob_table["H"][x][y] *= p_o
+        prob_table["O"][x][y] *= p_o
 
 
 # Finds the P(O) value for a set of observations
@@ -138,26 +129,19 @@ def get_p_o(prob_table, unit_combos, location_combos, alphas, max_units):
     for units in unit_combos:
         for cells in location_combos:
             cur_prob = 1
-            cur_p = max_units["b"]
-            cur_w = max_units["s"]
-            cur_h = max_units["n"]
-            cur_m = max_units["h"]
+            cur_p = max_units["W"]
+            cur_w = max_units["M"]
+            cur_h = max_units["H"]
+            cur_m = max_units["O"]
             for i in range(len(cells)):
                 (x, y) = cells[i]
+
                 if i >= len(units):
                     break
-                if units[i] == "p":
-                    cur_prob *= alphas["b"] * prob_table["b"][x][y] * cur_p
-                    cur_p -= 1
-                elif units[i] == "w":
-                    cur_prob *= alphas["s"] * prob_table["s"][x][y] * cur_w
-                    cur_w -= 1
-                elif units[i] == "m":
-                    cur_prob *= alphas["h"] * prob_table["h"][x][y] * cur_m
-                    cur_m -= 1
-                else:
-                    cur_prob += alphas["n"] * prob_table["n"][x][y] * cur_h
-                    cur_h -= 1
+                 
+                u = units[i]
+                cur_prob *= alphas[u] * prob_table[u][x][y] * max_units[u]
+                max_units[u] -= 1
             total += cur_prob
     return total
 
@@ -212,4 +196,5 @@ def normalize_prob(table, r):
     for i in range(len(table)):
         for j in range(len(table[i])):
             table[i][j] = table[i][j] * r * alpha
+
     return table

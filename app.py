@@ -206,7 +206,7 @@ def init(board_mult, difficulty):
         sprites[a].blit(wand, (0, 0))
     
     p1 = GUIPlayer(board, True, vis_pos, vis_csize, vis_margins, vis_gutters)  
-    p2 = MMPlayer(board, False, difficulty, h = h_advantage)
+    p2 = PPlayer(board, False)
 
 def build_ui():
     global btn_fow, btn_init, srf_obs, pnl_obs
@@ -272,7 +272,7 @@ def update(dt):
         running = False
 
 def process_event(ev):
-    global debug, running
+    global debug, running, cur_prob
 
     if ev.type == pygame.QUIT:
         running = False
@@ -296,9 +296,15 @@ def process_event(ev):
         if ev.key == pygame.K_d:
             debug = not debug
             vis_ui.set_visual_debug_mode(debug)
-    elif cur_turn and ev.type == pygame.MOUSEBUTTONUP and ev.button == 1: # If the left mouse button is pressed
-        p1.consume_event(ev)
-        
+    elif ev.type == pygame.MOUSEBUTTONUP: 
+        if cur_turn and ev.button == 1: # If the left mouse button is pressed
+            p1.consume_event(ev)
+        elif isinstance(p2, PPlayer) and ev.type == pygame.MOUSEBUTTONUP and ev.button == 3: # If the right mouse button is pressed
+            
+            # Display cell prob 
+            pos = tuple((a - b - vis_margins) // (vis_csize + vis_gutters) for a, b in zip(ev.pos, vis_pos))[::-1]
+            print(p2.get_probability(pos[0], pos[1])) 
+
 def draw(screen): 
     vis_overlay.convert_alpha()
     vis_overlay.fill(0) 
@@ -322,13 +328,13 @@ def draw(screen):
                 else:
                     c_fow = (40, 40, 40)
                     pygame.draw.rect(vis_overlay, c_fow, (x_pos, y_pos, vis_csize, vis_csize))
-        
+
         if p1.c_from:
             x = p1.c_from[1]
             y = p1.c_from[0]
    
             obs = board.observe(x, y).upper()
- 
+
             for s in "WHMO":
                 if s in obs:
                     srf_obs[s].show()

@@ -4,6 +4,7 @@ from pygame import *
 from pygame.locals import *
 from board import Board
 from minimax import *
+import probability as prob
 
 # Abstract class that defines a player
 # No idea how to do pythonic interfaces,
@@ -101,8 +102,11 @@ class PPlayer(Player):
     def __init__(self, board, major):
         super().__init__(board, major)
 
-        self._prime = {x: [[0 for _ in row] for row in board] for x in "O"}
+        self._prime = prob.initialize(len(board))
+        print(self._prime)
 
     def get_move(self):
-        return minimax(self._board, self._depth, self._major, self._heuristic)[1]
+        pass
 
+    def get_probability(self, r, c):
+        return {x: self._prime[x][r][c] for x in "WHMO"}
