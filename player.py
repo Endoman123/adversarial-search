@@ -102,11 +102,13 @@ class PPlayer(Player):
     def __init__(self, board, major):
         super().__init__(board, major)
 
-        self._prime = prob.initialize(len(board))
-        print(self._prime)
+        ret = prob.initialize(len(board))
+
+        self._prob_table = ret[0]
+        self._remaining = ret[1] 
 
     def get_move(self):
-        pass
+        return prob.guess_move(self._board, self._major, self._prob_table, self._remaining) 
 
     def get_probability(self, r, c):
-        return {x: self._prime[x][r][c] for x in "WHMO"}
+        return {x: self._prob_table[x][r][c] for x in "WHMO"}

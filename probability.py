@@ -19,7 +19,9 @@ def initialize(size):
     p_o[1:-1, :] = [ [ pit_prob for _ in range(size) ] for _ in range(1, size - 1) ] 
 
     prob_table = {"O": p_o, "W": p_w, "M": p_m, "H": p_h}
-    return prob_table
+    remaining = {x: d for x in "WHM"}
+
+    return prob_table, remaining
 
 
 # Probabilistics AI
@@ -38,8 +40,24 @@ def transition(remaining, prob_table, neighbors):
     prob_table['O'] = normalize_prob(prob_table['O'], remaining['O'])
 
 
-def guess_move():
-    pass
+def guess_move(board, major, prob_table, remaining):
+    # Step 1: Generate moves
+    moves = board.generate_moves(major)
+
+    neighbors = np.array([[0 for _ in range(len(board))] for _ in range(len(board))])
+
+    # Step 2: Generate neighbors list
+    for move in moves:
+        r, c = move[0]
+        neighbors[r, c] += 1
+        
+    print(neighbors)
+
+    # Step 3: Update probabilities
+    transition(remaining, prob_table, neighbors) 
+    
+    # Step 4: Rate a best move based on the given
+    return moves[0] 
 
 
 # Function to update an probability table

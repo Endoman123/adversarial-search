@@ -129,6 +129,7 @@ class Board(cabc.Sequence):
     # Move generator
     # Returns a dict of moves based on whether you are major or minor
     # For the sake of this, major/minor refers to the case of the piece
+    # Moves are stored as (r, c)
     def generate_moves(self, major):
         moves = [] 
         b_size = self._size
