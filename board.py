@@ -173,7 +173,6 @@ class Board(cabc.Sequence):
                 
                 cur_piece = board[r, c]
                 if cur_piece not in f"{team}_{ret}": # Test string checks if valid observation
-                    print(f"({c} {r}) == {cur_piece}") 
                     ret += cur_piece
 
         return ret.upper()

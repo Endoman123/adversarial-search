@@ -19,10 +19,14 @@ def initialize(size):
     p_o[1:-1, :] = [ [ pit_prob for _ in range(size) ] for _ in range(1, size - 1) ] 
 
     prob_table = {"O": p_o, "W": p_w, "H": p_h, "M": p_m}
-    remaining = size
+    remaining = {"W": d, "H": d, "M": d}
 
     return prob_table, remaining
 
+def get_obs(board, major):
+    team = "WHM" if major else "whm"
+    length = len(board)
+    return [[board.observe(x, y, major) if board[y][x] in team else "_" for x in range(length)] for y in range(length)]
 
 # Probabilistics AI
 def eval():
@@ -33,12 +37,15 @@ def eval():
 # remaining = total remaining pieces
 # prob_table = dictionary of the probability tables
 def update_probabilities(remaining, prob_table):
-    transition(prob_table['W'], remaining)
-    transition(prob_table['H'], remaining)
-    transition(prob_table['M'], remaining)
+    transition(prob_table['W'], remaining["W"])
+    transition(prob_table['H'], remaining["H"])
+    transition(prob_table['M'], remaining["M"])
     # prob_table['O'] = normalize_prob(prob_table['O'], remaining['O'])
 
 def transition(prob_board, c):
+    prime_board = np.array(prob_board)
+
+def transition_old(prob_board, c):
     prime_board = np.array(prob_board) 
   
     size = len(prime_board)
@@ -66,10 +73,9 @@ def guess_move(board, major, prob_table, remaining):
     moves = board.generate_moves(major)
     
     # Step 1.5: Generate Obeservation Board
-    length = len(board)
-    b_obs = [ [board.observe(x, y, major) for x in range(length)] for y in range(length)] 
-
+    b_obs = get_obs(board, major)
     print(b_obs)
+
     # Step 2: Update probabilities
     update_probabilities(remaining, prob_table) 
    
