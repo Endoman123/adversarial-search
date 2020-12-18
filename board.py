@@ -175,6 +175,8 @@ class Board(cabc.Sequence):
                 if cur_piece not in f"{team}_{ret}": # Test string checks if valid observation
                     ret += cur_piece
 
+        # Updates probability board if observation exists
+
         return ret.upper()
 
     def toggle_fow(self):

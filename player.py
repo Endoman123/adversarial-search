@@ -108,7 +108,10 @@ class PPlayer(Player):
         self._remaining = ret[1] 
 
     def get_move(self):
-        return prob.guess_move(self._board, self._major, self._prob_table, self._remaining) 
+        return prob.guess_move(self._board, self._major, self._prob_table, self._remaining)
+
+    def update_obs(self, observation, x, y):
+        return prob.observation_update(self._prob_table, observation, x, y, self._remaining)
 
     def get_probability(self, r, c):
         return {x: self._prob_table[x][r][c] for x in "WHMO"}

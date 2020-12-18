@@ -68,6 +68,27 @@ def normalize(board):
     alpha = 1 / np.sum(board)
     np.copyto(board, np.multiply(alpha, board))
 
+def observation_update(prob_table, observation, x, y, remaining):
+    prob_board = prob_table[observation]
+    sum = 0
+    for i in range(max(0, x - 1), min(len(prob_board, x + 2))):
+        for j in range(0, y - 1), min(len(prob_board[i]), y + 2):
+            sum += prob_board[i][j]
+    for i in range(max(0, x - 1), min(len(prob_board, x + 2))):
+        for j in range(0, y - 1), min(len(prob_board[i]), y + 2):
+            prob_board[i][j] /= sum
+
+
+    for i in range(len(prob_board)):
+        for j in range(len(prob_board)):
+            if x + 1 >= i >= x - 1 and y + 1 >= j >= y - 1:
+                continue
+            prob_board[i][j] *= (remaining[observation] - 1) / remaining[observation]
+
+    normalize(prob_board)
+    prob_table[observation] = prob_board
+
+
 def guess_move(board, major, prob_table, remaining):
     # Step 1: Generate moves
     moves = board.generate_moves(major)
@@ -80,6 +101,8 @@ def guess_move(board, major, prob_table, remaining):
     update_probabilities(remaining, prob_table) 
    
     print(prob_table)
+
+    #
    
     # Step 3: Rate a best move based on the given
     return moves[0] 
@@ -160,84 +183,3 @@ def update_after_player(occupied, prob_table, size):
         prob_table["H"][x][y] *= p_o
         prob_table["O"][x][y] *= p_o
 
-
-# Finds the P(O) value for a set of observations
-# prob_table = dictionary of the probability tables
-# unit_combos = all possible combinations of units
-# location_combos = all possible location combinations
-# alphas = dictionary of the alpha values
-# max_units = dictionary of the max number of units for each unit type
-def get_p_o(prob_table, unit_combos, location_combos, alphas, max_units):
-    total = 0
-    for units in unit_combos:
-        for cells in location_combos:
-            cur_prob = 1
-            cur_p = max_units["W"]
-            cur_w = max_units["M"]
-            cur_h = max_units["H"]
-            cur_m = max_units["O"]
-            for i in range(len(cells)):
-                (x, y) = cells[i]
-
-                if i >= len(units):
-                    break
-                 
-                u = units[i]
-                cur_prob *= alphas[u] * prob_table[u][x][y] * max_units[u]
-                max_units[u] -= 1
-            total += cur_prob
-    return total
-
-# Gets all of the location combinations
-# arr = adjacent cells
-# combos = originally empty list of combos
-# data = array that will be used to fill the locations, then append to combos
-# start = starting index
-# end = end index
-# index= current index
-# r = max number of units possible
-def combo_locations(arr, combos, data, start,
-                    end, index, r):
-    if index == r:
-        combos.append(data)
-        return
-    i = start
-    while i <= end and end - i + 1 >= r - index:
-        data[index] = arr[i];
-        combo_locations(arr, combos, data, i + 1,
-                        end, index + 1, r)
-        i += 1
-
-# Gets all the possible combinations of units given our observations
-# units = string of the different units from the observations
-def get_unit_combos(units):
-    result = []
-    for i in range(len(units)):
-        unit_combos(units, 0, i, "", result)
-    return result
-
-
-def unit_combos(units, start, depth, prefix, result):
-    for i in range(start, len(units)):
-        next = prefix + units[i]
-        if (depth > 0):
-            unit_combos(units, i + 1, depth - 1, next, result)
-        else:
-            result.append(next)
-
-# Gets the alpha value for a probability table
-def get_alpha(table):
-    sum = 0
-    for i in range(len(table)):
-        for j in range(len(table[i])):
-            sum += table[i][j]
-    return 1 / sum
-
-# Normalizes the probability for a table
-def normalize_prob(table, r):
-    alpha = get_alpha(table)
-    for i in range(len(table)):
-        for j in range(len(table[i])):
-            table[i][j] = table[i][j] * r * alpha
-
-    return table
