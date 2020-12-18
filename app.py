@@ -254,7 +254,7 @@ def update(dt):
       
         if p1.c_from: 
             y, x = p1.c_from
-            obs = board.observe(x, y).upper()
+            obs = board.observe(x, y, p1.get_major())
 
             for s in "WHMO":
                 if s in obs:

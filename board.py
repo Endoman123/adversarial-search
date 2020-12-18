@@ -156,7 +156,7 @@ class Board(cabc.Sequence):
     # Generates an 'observation'
     # Returns a string containing the relevant pieces surrounding it,
     # no repeats.
-    def observe(self, x, y):
+    def observe(self, x, y, major = True):
         if not 0 <= x < self._size or not 0 <= y < self._size:
             raise Exception("Cannot observe outside of board!")
     
@@ -164,20 +164,19 @@ class Board(cabc.Sequence):
         board = self._board
         b_size = self._size
         piece = board[y, x]
+        team = "WHM" if major else "whm" 
 
-        if piece in "WHMwhm": # We can do an observation here
-            team = "WHM" if piece.isupper() else "whm" 
+        for r in range(max(0, y - 1), min(b_size, y + 2)): 
+            for c in range(max(0, x - 1), min(b_size, x + 2)):
+                if r == y and c == x:
+                    continue
+                
+                cur_piece = board[r, c]
+                if cur_piece not in f"{team}_{ret}": # Test string checks if valid observation
+                    print(f"({c} {r}) == {cur_piece}") 
+                    ret += cur_piece
 
-            for r in range(max(0, y - 1), min(b_size, y + 2)): 
-                for c in range(max(0, x - 1), min(b_size, x + 2)):
-                    if r == y and c == x:
-                        continue
-                    
-                    cur_piece = board[r, c]
-                    if cur_piece not in f"{team}_{ret}": # Test string checks if valid observation
-                        ret += cur_piece
-
-        return ret
+        return ret.upper()
 
     def toggle_fow(self):
         self._fow = not self._fow

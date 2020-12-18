@@ -11,14 +11,14 @@ def initialize(size):
     p_m = np.array([[0. for _ in range(size)] for _ in range(size)])
     p_o = np.array([[0. for _ in range(size)] for _ in range(size)])
 
-    p_w[0][::3] = [1 / d for _ in range(d)]
-    p_h[0][1::3] = [1 / d for _ in range(d)]
-    p_m[0][2::3] = [1 / d for _ in range(d)]
+    p_w[0][::3] = [1. for _ in range(d)]
+    p_h[0][1::3] = [1. for _ in range(d)]
+    p_m[0][2::3] = [1. for _ in range(d)]
 
     pit_prob = (1. - d / 3.) / d
     p_o[1:-1, :] = [ [ pit_prob for _ in range(size) ] for _ in range(1, size - 1) ] 
 
-    prob_table = {"O": p_o, "W": p_w, "M": p_m, "H": p_h}
+    prob_table = {"O": p_o, "W": p_w, "H": p_h, "M": p_m}
     remaining = size
 
     return prob_table, remaining
@@ -34,32 +34,42 @@ def eval():
 # prob_table = dictionary of the probability tables
 def update_probabilities(remaining, prob_table):
     transition(prob_table['W'], remaining)
-    transition(prob_table['M'], remaining)
     transition(prob_table['H'], remaining)
+    transition(prob_table['M'], remaining)
     # prob_table['O'] = normalize_prob(prob_table['O'], remaining['O'])
 
 def transition(prob_board, c):
     prime_board = np.array(prob_board) 
   
-    print(prime_board)
     size = len(prime_board)
     for i in range(size):
         for j in range(size):
             # Neighbors calc
             neighbors = 0
-            for m in range(max(0, i - 1), min(size, i + 2)):
+            for m in (i - 1, i + 1):
+                if not 0 <= m < size:
+                    continue
                 for n in range(max(0, j - 1), min(size, j + 2)):
-                    if m == i and n == j:
-                        continue
-
                     neighbors += prime_board[m][n]  
 
-            prob_board[i, j] = (1 - 1/c) * prime_board[i][j] + neighbors  
+            prob_board[i, j] = (1 - 1/c) * prime_board[i][j] + neighbors
+
+    normalize(prob_board)
+
+# Normalize probabilities
+def normalize(board):
+    alpha = 1 / np.sum(board)
+    np.copyto(board, np.multiply(alpha, board))
 
 def guess_move(board, major, prob_table, remaining):
     # Step 1: Generate moves
     moves = board.generate_moves(major)
+    
+    # Step 1.5: Generate Obeservation Board
+    length = len(board)
+    b_obs = [ [board.observe(x, y, major) for x in range(length)] for y in range(length)] 
 
+    print(b_obs)
     # Step 2: Update probabilities
     update_probabilities(remaining, prob_table) 
    
