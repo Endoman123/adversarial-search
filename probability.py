@@ -39,7 +39,7 @@ def get_obs(board, prob_table, major):
 # Probabilistics AI
 def eval(move, prob_table):
     (y, x) = move[1]
-    return sum(prob_table[u][y][x] for u in "WHM")
+    return sum(prob_table[u][y][x] for u in "WHM") - prob_table["O"][y][x]
 
 
 # Updates all of the probability boards after the opponent has moved
