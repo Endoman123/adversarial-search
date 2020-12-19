@@ -23,10 +23,15 @@ def initialize(size):
 
     return prob_table, remaining
 
-def get_obs(board, major):
-    team = "WHM" if major else "whm"
+def get_obs(board, prob_table, major):
     length = len(board)
-    return [[board.observe(x, y, major) if board[y][x] in team else "_" for x in range(length)] for y in range(length)]
+    
+    for y in range(length):
+        for x in range(length):
+            obs = board.observe(x, y, major)
+            if not obs:
+                for u in obs:
+                    observation_update(prob_table[u], x, y, remaining)
 
 # Probabilistics AI
 def eval():
@@ -43,9 +48,6 @@ def update_probabilities(remaining, prob_table):
     # prob_table['O'] = normalize_prob(prob_table['O'], remaining['O'])
 
 def transition(prob_board, c):
-    prime_board = np.array(prob_board)
-
-def transition_old(prob_board, c):
     prime_board = np.array(prob_board) 
   
     size = len(prime_board)
@@ -61,51 +63,53 @@ def transition_old(prob_board, c):
 
             prob_board[i, j] = (1 - 1/c) * prime_board[i][j] + neighbors
 
-    normalize(prob_board)
 
 # Normalize probabilities
 def normalize(board):
     alpha = 1 / np.sum(board)
     np.copyto(board, np.multiply(alpha, board))
 
-def observation_update(prob_table, observation, x, y, remaining):
-    prob_board = prob_table[observation]
-    sum = 0
-    for i in range(max(0, x - 1), min(len(prob_board, x + 2))):
-        for j in range(0, y - 1), min(len(prob_board[i]), y + 2):
-            sum += prob_board[i][j]
-    for i in range(max(0, x - 1), min(len(prob_board, x + 2))):
-        for j in range(0, y - 1), min(len(prob_board[i]), y + 2):
-            prob_board[i][j] /= sum
 
+def observation_update(prob_board, x, y, remaining): 
+    length = len(prob_board) 
+    alpha = 1 / np.sum(prob_board[y - 1:y + 2, x - 1:x + 2])
 
-    for i in range(len(prob_board)):
-        for j in range(len(prob_board)):
+    np.copyto(prob_board[y - 1:y + 2][x - 1: x + 2], np.multiply(alpha, prob_board[y - 1:y + 2][x - 1: x + 2]))
+
+    for i in range(length):
+        for j in range(length):
             if x + 1 >= i >= x - 1 and y + 1 >= j >= y - 1:
                 continue
-            prob_board[i][j] *= (remaining[observation] - 1) / remaining[observation]
 
-    normalize(prob_board)
-    prob_table[observation] = prob_board
+            prob_board[i][j] *= (remaining[observation] - 1) / remaining[observation]
 
 
 def guess_move(board, major, prob_table, remaining):
+    ret = None 
+    best = -inf
+
     # Step 1: Generate moves
     moves = board.generate_moves(major)
     
-    # Step 1.5: Generate Obeservation Board
-    b_obs = get_obs(board, major)
-    print(b_obs)
-
     # Step 2: Update probabilities
     update_probabilities(remaining, prob_table) 
+    get_obs(board, prob_table, major)
+    
+    # Normalize boards
+    for a in "WHMO":
+        normalize(prob_table[a])
    
     print(prob_table)
 
-    #
-   
     # Step 3: Rate a best move based on the given
-    return moves[0] 
+    for move in moves:
+        temp = eval(move)
+
+        if temp > best:
+            ret = move
+            best = temp
+
+    return ret 
 
 
 # Function to update an probability table

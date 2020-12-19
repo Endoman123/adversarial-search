@@ -256,9 +256,6 @@ def update(dt):
             y, x = p1.c_from
             obs = board.observe(x, y, p1.get_major())
 
-            for s in obs:
-                p1.update_obs(s, x, y)
-
             for s in "WHMO":
                 if s in obs:
                     srf_obs[s].show()
@@ -319,7 +316,9 @@ def process_event(ev):
             
             # Display cell prob 
             pos = tuple((a - b - vis_margins) // (vis_csize + vis_gutters) for a, b in zip(ev.pos, vis_pos))[::-1]
-            print(p2.get_probability(pos[0], pos[1]))
+            
+            if (0, 0) <= pos < (len(board), len(board)):
+                print(p2.get_probability(pos[0], pos[1]))
 
 
 
