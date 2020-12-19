@@ -321,7 +321,6 @@ def process_event(ev):
                 print(p2.get_probability(pos[0], pos[1]))
 
 
-
 def draw(screen): 
     vis_overlay.convert_alpha()
     vis_overlay.fill(0) 

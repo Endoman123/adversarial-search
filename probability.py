@@ -1,6 +1,8 @@
 import board
 import numpy as np
 import itertools
+from math import *
+from heuristics import *
 
 # Initializes the probabilities boards in a map of 2d arrays
 def initialize(size):
@@ -33,8 +35,9 @@ def get_obs(board, prob_table, major):
                 for u in obs:
                     observation_update(prob_table[u], x, y, remaining)
 
+
 # Probabilistics AI
-def eval():
+def eval(**kwargs):
    pass 
 
 
@@ -45,7 +48,7 @@ def update_probabilities(remaining, prob_table):
     transition(prob_table['W'], remaining["W"])
     transition(prob_table['H'], remaining["H"])
     transition(prob_table['M'], remaining["M"])
-    # prob_table['O'] = normalize_prob(prob_table['O'], remaining['O'])
+
 
 def transition(prob_board, c):
     prime_board = np.array(prob_board) 
@@ -84,7 +87,7 @@ def observation_update(prob_board, x, y, remaining):
             prob_board[i][j] *= (remaining[observation] - 1) / remaining[observation]
 
 
-def guess_move(board, major, prob_table, remaining):
+def guess_move(board, major, prob_table, remaining, h = h_disable, w = 1):
     ret = None 
     best = -inf
 
@@ -103,7 +106,7 @@ def guess_move(board, major, prob_table, remaining):
 
     # Step 3: Rate a best move based on the given
     for move in moves:
-        temp = eval(move)
+        temp = eval(move) + h() * w
 
         if temp > best:
             ret = move
@@ -186,4 +189,3 @@ def update_after_player(occupied, prob_table, size):
         prob_table["M"][x][y] *= p_o
         prob_table["H"][x][y] *= p_o
         prob_table["O"][x][y] *= p_o
-
