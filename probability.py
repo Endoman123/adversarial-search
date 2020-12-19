@@ -37,7 +37,7 @@ def get_obs(board, prob_table, major):
 
 
 # Probabilistics AI
-def eval(prob_table, move):
+def eval(move, prob_table):
     (y, x) = move[1]
     return sum(prob_table[u][y][x] for u in "WHM")
 
@@ -107,7 +107,7 @@ def guess_move(board, major, prob_table, remaining, h = h_disable, w = 1):
 
     # Step 3: Rate a best move based on the given
     for move in moves:
-        temp = eval(move) + h() * w
+        temp = eval(move, prob_table) + h() * w
 
         if temp > best:
             ret = move
