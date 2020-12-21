@@ -114,3 +114,31 @@ def guess_move(board, major, prob_table, remaining, h = h_disable, w = 1):
             best = temp
 
     return ret
+
+def guess_move_p(board, major, prob_table, remaining, h = h_disable, w = 1):
+    ret = None 
+    best = minimax_p(board, prob_table, len(board), major)
+
+    # Step 1: Generate moves
+    moves = board.generate_moves(major)
+    
+    # Step 2: Update probabilities
+    update_probabilities(remaining, prob_table) 
+    get_obs(board, prob_table, major)
+    
+    # Normalize boards
+    for a in "WHMO":
+        normalize(prob_table[a])
+   
+    print(prob_table)
+
+    # Step 3: Rate a best move based on the given
+    for move in moves:
+        temp = eval(move, prob_table) + h() * w
+
+        if temp > best:
+            ret = move
+            best = temp
+
+    return ret
+

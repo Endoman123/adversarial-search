@@ -88,8 +88,70 @@ def minimax(board, depth, is_major, h = h_disable, a = -inf, b = inf):
 # a: Alpha
 # b: Beta
 # Returns the move and value best suited to transition into the most optimal state
-def minimax_p(board, prime, depth, is_major, h = h_disable, a = -inf, b = inf):
-    pass
+def minimax_p(board, prob_table, depth, is_major, h = h_disable, a = -inf, b = inf):
+    boardAssumed = generateBoad(board, prob_table)
+    b_metric = evaluate(boardAssumed)
+    b_moves = boardAssumed.generate_moves(is_major) 
+    ret = (b_metric, None)
+
+    if depth == 0 or abs(b_metric) == inf:
+        pass
+    else:
+        moves_queue = PriorityQueue() 
+        sign = 1 if is_major else -1
+        mm = boardAssumed.create_memento()   
+        opt_value = -inf * sign
+        opt_move = ()
+
+        for m in b_moves:
+            moves_queue.put((-h(board = boardAssumed, major = is_major), m))
+            
+        while not moves_queue.empty():
+            item = moves_queue.get()
+            move = item[1]
+           
+            # Perform move, evaluate
+            boardAssumed.move(move[0], move[1])
+            c_minimax = minimax(boardAssumed, depth - 1, not is_major, h, a, b)
+            diff = c_minimax[0] - opt_value
+
+            if diff * sign > 0:
+                opt_value = c_minimax[0]
+                opt_move = move
+
+            board.restore(mm)
+
+            if is_major:
+                a = max(a, opt_value)
+                if a >= b:
+                    break
+            else:
+                b = min(b, opt_value)
+                if b <= a:
+                    break
+
+        ret = (opt_value, opt_move)
+
+    return ret
+
+#Generates an assumed board
+def generateBoard (board, prob_table):
+    length = len(board)
+    boardAssumed = board.init(length)
+    for i in range(length):
+        for j in range(length):
+            probs = prob_table[i][j]
+            for i in probs:
+                if i == 0:
+                    maxProb = probs[i]
+                elif probs[i] > maxProb:
+                    maxProb = probs[i]
+            boardAssumed[i][j] = maxProb
+    
+    return boardAssumed
+                
+           
+
 
 """"
 def update()
